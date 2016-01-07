@@ -1,6 +1,6 @@
 <?php
 
-require_once(dirname(__FILE__) . '/../autoload.php');
+require __DIR__ . '/../vendor/autoload.php';
 
 function emptyDir($dir)
 {

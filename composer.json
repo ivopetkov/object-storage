@@ -11,5 +11,10 @@
             "homepage": "http://ivopetkov.com",
             "role": "Developer"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    }
 }
