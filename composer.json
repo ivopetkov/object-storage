@@ -1,0 +1,15 @@
+{
+    "name": "ivopetkov/app",
+    "description": "PHP micro framework",
+    "keywords": ["framework", "routing", "error handling", "logging"],
+    "homepage": "https://github.com/ivopetkov/app",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ivo Petkov",
+            "email": "ivo@ivopetkov.com",
+            "homepage": "http://ivopetkov.com",
+            "role": "Developer"
+        }
+    ]
+}
