@@ -1,8 +1,8 @@
 {
-    "name": "ivopetkov/app",
-    "description": "PHP micro framework",
-    "keywords": ["framework", "routing", "error handling", "logging"],
-    "homepage": "https://github.com/ivopetkov/app",
+    "name": "ivopetkov/object-storage",
+    "description": "A better way to work with files",
+    "keywords": ["file access", "object storage", "locking", "atomic file operations"],
+    "homepage": "https://github.com/ivopetkov/object-storage",
     "license": "MIT",
     "authors": [
         {
