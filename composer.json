@@ -8,10 +8,12 @@
         {
             "name": "Ivo Petkov",
             "email": "ivo@ivopetkov.com",
-            "homepage": "http://ivopetkov.com",
-            "role": "Developer"
+            "homepage": "http://ivopetkov.com"
         }
     ],
+    "require": {
+        "php": ">=5.5.0"
+    },
     "autoload": {
         "psr-4": {
             "": "src/"

@@ -49,7 +49,7 @@ class ObjectStorage
         if (!is_string($dir)) {
             throw new \InvalidArgumentException('The dir argument must be a string');
         }
-        $dir = rtrim($dir, '/') . '/';
+        $dir = rtrim($dir, '/\\') . '/';
         $this->objectsDir = $dir . 'objects/';
         $this->metadataDir = $dir . 'metadata/';
         $this->tempDir = $dir . 'temp/';
