@@ -8,9 +8,9 @@ class KeyCollisionTest extends PHPUnit_Framework_TestCase
      */
     public function testFileWhenThereIsDirWithTheSameKey()
     {
-        removeDir('data/');
+        removeDataDir();
 
-        $objectStorage = new ObjectStorage('data/');
+        $objectStorage = getInstance();
 
         $result = $objectStorage->set(
                 [
@@ -41,7 +41,7 @@ objects/data1/data2: data
      */
     public function testFileWhenThereIsDirWithTheSameKeyCleanUp()
     {
-        removeDir('data/');
+        removeDataDir();
     }
 
     /**
@@ -49,9 +49,9 @@ objects/data1/data2: data
      */
     public function testDirWhenThereIsFileWithTheSameKey()
     {
-        removeDir('data/');
+        removeDataDir();
 
-        $objectStorage = new ObjectStorage('data/');
+        $objectStorage = getInstance();
 
         $result = $objectStorage->set(
                 [
@@ -81,7 +81,7 @@ objects/data1: data
      */
     public function testDirWhenThereIsFileWithTheSameKeyCleanUp()
     {
-        removeDir('data/');
+        removeDataDir();
     }
 
 }

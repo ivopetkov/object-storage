@@ -28,17 +28,32 @@ function checkState($expectedState)
     return $md5 !== md5(getState());
 }
 
+function getDataDir(){
+    return sys_get_temp_dir() . '/object-storage-tests/data/';
+}
+
 function getState()
 {
-    $files = getFilesInDir('data/');
+    $dir = getDataDir();
+    $files = getFilesInDir($dir);
     sort($files);
     $result = '';
     foreach ($files as $filename) {
-        if (is_file('data/' . $filename)) {
-            $result .= $filename . ': ' . file_get_contents('data/' . $filename) . "\n";
+        if (is_file($dir . $filename)) {
+            $result .= $filename . ': ' . file_get_contents($dir . $filename) . "\n";
         }
     }
     return md5($result) . "\n" . $result;
+}
+
+function removeDataDir()
+{
+    removeDir(getDataDir());
+}
+
+function getInstance()
+{
+    return new ObjectStorage(getDataDir());
 }
 
 function getFilesInDir($dir)

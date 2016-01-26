@@ -20,9 +20,9 @@ class LocksTest extends PHPUnit_Framework_TestCase
      */
     public function testLockedKeys1()
     {
-        removeDir('data/');
+        removeDataDir();
         $this->setExpectedException('ObjectStorage\ObjectLockedException');
-        $objectStorage = new TestObjectStorage('data/');
+        $objectStorage = new TestObjectStorage(getDataDir());
         $objectStorage->set(
                 [
                     'key' => 'lockedata',
@@ -36,7 +36,7 @@ class LocksTest extends PHPUnit_Framework_TestCase
      */
     public function testLockedKeys1CleanUp()
     {
-        removeDir('data/');
+        removeDataDir();
     }
 
     /**
@@ -44,9 +44,9 @@ class LocksTest extends PHPUnit_Framework_TestCase
      */
     public function testLockedKeys2()
     {
-        removeDir('data/');
+        removeDataDir();
         $this->setExpectedException('ObjectStorage\ObjectLockedException');
-        $objectStorage = new TestObjectStorage('data/');
+        $objectStorage = new TestObjectStorage(getDataDir());
         $objectStorage->set(
                 [
                     'key' => 'lockedata',
@@ -60,7 +60,7 @@ class LocksTest extends PHPUnit_Framework_TestCase
      */
     public function testLockedKeys2CleanUp()
     {
-        removeDir('data/');
+        removeDataDir();
     }
 
 }

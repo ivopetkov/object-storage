@@ -11,8 +11,8 @@ class DataTest extends PHPUnit_Framework_TestCase
      */
     public function testDataState1()
     {
-        removeDir('data/');
-        $objectStorage = new ObjectStorage('data/');
+        removeDataDir();
+        $objectStorage = getInstance();
 
         // Create initial data
         $result = $objectStorage->set(
@@ -827,7 +827,7 @@ objects/prefix2/datac: C
 '));
 
 
-        removeDir('data/');
+        removeDataDir();
     }
 
     /**
@@ -835,8 +835,8 @@ objects/prefix2/datac: C
      */
     public function testEmptyData()
     {
-        removeDir('data/');
-        $objectStorage = new ObjectStorage('data/');
+        removeDataDir();
+        $objectStorage = getInstance();
 
         $result = $objectStorage->set(
                 [
@@ -877,7 +877,7 @@ objects/emptydata:
 
         //echo "\n\n" . var_export($result) . "\n\n" . getState() . "\n\n";
 
-        removeDir('data/');
+        removeDataDir();
     }
 
 }
