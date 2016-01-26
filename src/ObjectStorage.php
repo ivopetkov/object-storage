@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * Object Storage
+ * https://github.com/ivopetkov/object-storage
+ * Copyright (c) 2016 Ivo Petkov
+ * Free to use under the MIT license.
+ */
+
 class ObjectStorage
 {
 
@@ -56,7 +63,7 @@ class ObjectStorage
     }
 
     /**
-     * 
+     * Retrieves object data for specified key
      * @param array $parameters
      * @return array
      */
@@ -135,32 +142,32 @@ class ObjectStorage
         return $this->executeCommand([$parameters], 'search')[0];
     }
 
-    function getObjectBody($key)
-    {
-        $parameters = [
-            [
-                'where' => [
-                    ['key', $key]
-                ],
-                'result' => ['key', 'body']
-            ]
-        ];
-        $result = $this->executeCommand($parameters, 'search');
-        return isset($result[0], $result[0][0]) ? $result[0][0]['body'] : false;
-    }
-
-    function objectExists($key)
-    {
-        $parameters = [
-            [
-                'where' => [
-                    ['key', $key]
-                ]
-            ]
-        ];
-        $result = $this->executeCommand($parameters, 'search');
-        return isset($result[0], $result[0][0]);
-    }
+//    function getObjectBody($key)
+//    {
+//        $parameters = [
+//            [
+//                'where' => [
+//                    ['key', $key]
+//                ],
+//                'result' => ['key', 'body']
+//            ]
+//        ];
+//        $result = $this->executeCommand($parameters, 'search');
+//        return isset($result[0], $result[0][0]) ? $result[0][0]['body'] : false;
+//    }
+//
+//    function objectExists($key)
+//    {
+//        $parameters = [
+//            [
+//                'where' => [
+//                    ['key', $key]
+//                ]
+//            ]
+//        ];
+//        $result = $this->executeCommand($parameters, 'search');
+//        return isset($result[0], $result[0][0]);
+//    }
 
     /**
      * 
