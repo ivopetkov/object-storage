@@ -77,10 +77,10 @@ class ObjectStorage
      * @param array $parameters
      * @return boolean
      */
-    function add($parameters)
-    {
-        return $this->executeCommand([$parameters], 'add')[0];
-    }
+//    function add($parameters)
+//    {
+//        return $this->executeCommand([$parameters], 'add')[0];
+//    }
 
     /**
      * 

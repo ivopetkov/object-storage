@@ -5,6 +5,11 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          stopOnFailure="true">
+    <testsuites>
+        <testsuite name="Object Storage Test Suite">
+            <directory>./tests/</directory>
+        </testsuite>
+    </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory>./src/</directory>
