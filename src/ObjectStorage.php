@@ -344,7 +344,7 @@ class ObjectStorage
      * @param string $key
      * @return boolean
      */
-    protected function isValidKey($key)
+    public function isValidKey($key)
     {
         if (strlen($key) === 0 || $key === '.' || $key === '..' || strpos($key, '/../') !== false || strpos($key, '/./') !== false || strpos($key, '/') === 0 || strpos($key, './') === 0 || strpos($key, '../') === 0 || substr($key, -2) === '/.' || substr($key, -3) === '/..' || substr($key, -1) === '/') {
             return false;
