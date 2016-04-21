@@ -436,7 +436,7 @@ class ObjectStorage
                                     $whereData[$whereDataItem[0]] = [];
                                 }
                                 $whereOperator = isset($whereDataItem[2]) ? $whereDataItem[2] : '==';
-                                if ($whereOperator !== '==' && $whereOperator !== 'regexp' && $whereOperator !== 'search') {
+                                if ($whereOperator !== '==' && $whereOperator !== 'regexp' && $whereOperator !== 'search' && $whereOperator !== 'startsWith') {
                                     throw new \InvalidArgumentException('invalid where operator - ' . $whereOperator);
                                 }
                                 if (is_string($whereDataItem[1])) {
@@ -627,24 +627,36 @@ class ObjectStorage
                     if ($step === 3) {
                         // get object keys
                         $hasWhere = isset($cache[$index], $cache[$index]['where']);
-                        $keysFound = false;
+                        $getAllKeys = true;
                         $objectsKeys = [];
                         if ($hasWhere && isset($cache[$index]['where']['key'])) {
                             $keysData = $cache[$index]['where']['key'];
-                            $allEqual = true;
+                            $keysDone = true;
                             foreach ($keysData as $keyData) {
                                 if ($keyData[0] === '==') {
                                     $objectsKeys[] = $keyData[1];
+                                } elseif ($keyData[0] === 'startsWith') {
+                                    $position = strrpos($keyData[1], '/');
+                                    if ($position !== false) {
+                                        $dir = substr($keyData[1], 0, $position);
+                                        $files = $this->getFiles($this->objectsDir . $dir . '/', true);
+                                        foreach ($files as $filename) {
+                                            $objectsKeys[] = $dir . '/' . $filename;
+                                        }
+                                    } else {
+                                        $keysDone = false;
+                                        break;
+                                    }
                                 } else {
-                                    $allEqual = false;
+                                    $keysDone = false;
                                     break;
                                 }
                             }
-                            if ($allEqual) {
-                                $keysFound = true;
+                            if ($keysDone) {
+                                $getAllKeys = false;
                             }
                         }
-                        if (!$keysFound) {
+                        if ($getAllKeys) {
                             $objectsKeys = $this->getFiles($this->objectsDir, true);
                         }
 
@@ -855,6 +867,10 @@ class ObjectStorage
                 }
             } elseif ($conditionData[0] === 'regexp') {
                 if (preg_match("/" . $conditionData[1] . "/", $value) === 1) {
+                    return true;
+                }
+            } elseif ($conditionData[0] === 'startsWith') {
+                if (substr($value, 0, strlen($conditionData[1])) === $conditionData[1]) {
                     return true;
                 }
             } elseif ($conditionData[0] === 'search') {
