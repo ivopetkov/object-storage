@@ -7,6 +7,8 @@
  * Free to use under the MIT license.
  */
 
+namespace IvoPetkov;
+
 class ObjectStorage
 {
 
@@ -228,12 +230,12 @@ class ObjectStorage
      * 
      * @param string $filename The filename
      * @return resource|false File pointer of false if unsuccessful
-     * @throws \ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      */
     private function getFilePointerForWriting($filename)
     {
         if ($this->createFileDirIfNotExists($filename) === false) {
-            throw new \ObjectStorage\ErrorException('Cannot write at ' . $filename);
+            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
         }
         for ($i = 0; $i < $this->lockRetriesCount; $i++) {
             $filePointer = $this->tryGetFilePointerForWriting($filename);
@@ -252,12 +254,12 @@ class ObjectStorage
      * 
      * @param string $filename The filename
      * @return resource|false File pointer of false if unsuccessful
-     * @throws \ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      */
     private function tryGetFilePointerForWriting($filename)
     {
         if (is_dir($filename)) {
-            throw new \ObjectStorage\ErrorException('Cannot write at ' . $filename);
+            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
         }
         $this->setErrorHandler();
         $filePointer = fopen($filename, "c+");
@@ -422,9 +424,9 @@ class ObjectStorage
      *        'body' => 'body2'
      *    ]
      * @return array Array containing the results for the commands
-     * @throws \ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \InvalidArgumentException
-     * @throws \ObjectStorage\ObjectLockedException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function execute($commands)
     {
@@ -443,24 +445,24 @@ class ObjectStorage
             if ($step === 1) {
                 $this->createDirIfNotExists($this->objectsDir);
                 if (!is_writable($this->objectsDir)) {
-                    throw new \ObjectStorage\ErrorException('The objectsDir specified (' . $this->objectsDir . ') is not writable');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The objectsDir specified (' . $this->objectsDir . ') is not writable');
                 }
                 if (!is_readable($this->objectsDir)) {
-                    throw new \ObjectStorage\ErrorException('The objectsDir specified (' . $this->objectsDir . ') is not readable');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The objectsDir specified (' . $this->objectsDir . ') is not readable');
                 }
                 $this->createDirIfNotExists($this->metadataDir);
                 if (!is_writable($this->metadataDir)) {
-                    throw new \ObjectStorage\ErrorException('The metadataDir specified (' . $this->metadataDir . ') is not writable');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The metadataDir specified (' . $this->metadataDir . ') is not writable');
                 }
                 if (!is_readable($this->metadataDir)) {
-                    throw new \ObjectStorage\ErrorException('The metadataDir specified (' . $this->metadataDir . ') is not readable');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The metadataDir specified (' . $this->metadataDir . ') is not readable');
                 }
                 $this->createDirIfNotExists($this->tempDir);
                 if (!is_writable($this->tempDir)) {
-                    throw new \ObjectStorage\ErrorException('The tempDir specified (' . $this->tempDir . ') is not writable');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The tempDir specified (' . $this->tempDir . ') is not writable');
                 }
                 if (!is_readable($this->tempDir)) {
-                    throw new \ObjectStorage\ErrorException('The tempDir specified (' . $this->tempDir . ') is not readable');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The tempDir specified (' . $this->tempDir . ') is not readable');
                 }
             }
             foreach ($commands as $index => $commandData) {
@@ -894,7 +896,7 @@ class ObjectStorage
 
         if ($lockFailure) {
             $this->removeErrorHandler();
-            throw new \ObjectStorage\ObjectLockedException();
+            throw new \IvoPetkov\ObjectStorage\ObjectLockedException();
         } else {
             foreach ($filesToDelete as $filename => $one) {
                 if (is_file($filename)) {
@@ -1012,7 +1014,7 @@ class ObjectStorage
     {
         set_error_handler(function($errno, $errstr, $errfile, $errline) {
             restore_error_handler();
-            throw new \ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
+            throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
         });
     }
 

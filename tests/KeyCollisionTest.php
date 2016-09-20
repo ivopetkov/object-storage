@@ -26,7 +26,7 @@ class KeyCollisionTest extends ObjectStorageTestCase
 objects/data1/data2: data
 '));
 
-        $this->setExpectedException('\ObjectStorage\ErrorException');
+        $this->setExpectedException('\IvoPetkov\ObjectStorage\ErrorException');
         $result = $objectStorage->set(
                 [
                     'key' => 'data1',
@@ -65,7 +65,7 @@ objects/data1/data2: data
 objects/data1: data
 '));
 
-        $this->setExpectedException('\ObjectStorage\ErrorException');
+        $this->setExpectedException('\IvoPetkov\ObjectStorage\ErrorException');
         $result = $objectStorage->set(
                 [
                     'key' => 'data1/data2',

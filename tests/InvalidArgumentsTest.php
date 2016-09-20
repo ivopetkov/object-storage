@@ -12,7 +12,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
     public function testInvalidArgumentsInConstructor()
     {
         $this->setExpectedException('InvalidArgumentException');
-        new ObjectStorage(1);
+        new \IvoPetkov\ObjectStorage(1);
     }
 
     /**

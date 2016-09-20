@@ -7,7 +7,7 @@
  * Free to use under the MIT license.
  */
 
-namespace ObjectStorage;
+namespace IvoPetkov\ObjectStorage;
 
 class ErrorException extends \ErrorException
 {

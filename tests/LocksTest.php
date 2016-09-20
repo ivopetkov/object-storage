@@ -13,8 +13,8 @@ class LocksTest extends ObjectStorageTestCase
     {
         $this->removeDataDir();
         $this->lockFile('lockeddata1');
-        $this->setExpectedException('ObjectStorage\ObjectLockedException');
-        $objectStorage = new ObjectStorage($this->getDataDir());
+        $this->setExpectedException('\IvoPetkov\ObjectStorage\ObjectLockedException');
+        $objectStorage = new \IvoPetkov\ObjectStorage($this->getDataDir());
         $objectStorage->set(
                 [
                     'key' => 'lockeddata1',
@@ -30,8 +30,8 @@ class LocksTest extends ObjectStorageTestCase
     {
         $this->removeDataDir();
         $this->lockFile('lockeddata2');
-        $this->setExpectedException('ObjectStorage\ObjectLockedException');
-        $objectStorage = new ObjectStorage($this->getDataDir());
+        $this->setExpectedException('\IvoPetkov\ObjectStorage\ObjectLockedException');
+        $objectStorage = new \IvoPetkov\ObjectStorage($this->getDataDir());
         $objectStorage->set(
                 [
                     'key' => 'lockeddata2',

@@ -59,7 +59,7 @@ class ObjectStorageTestCase extends PHPUnit_Framework_TestCase
 
     public function getInstance()
     {
-        return new ObjectStorage($this->getDataDir());
+        return new \IvoPetkov\ObjectStorage($this->getDataDir());
     }
 
     public function getFilesInDir($dir)
