@@ -74,7 +74,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
      * @return array An array containing the result data if existent, empty array otherwise
      */
-    function get($parameters)
+    public function get($parameters)
     {
         return $this->executeCommand([$parameters], 'get')[0];
     }
@@ -95,7 +95,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']
      * @return boolean TRUE if successful, FALSE otherwise
      */
-    function set($parameters)
+    public function set($parameters)
     {
         return $this->executeCommand([$parameters], 'set')[0];
     }
@@ -106,7 +106,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1']
      * @return boolean
      */
-    function append($parameters)
+    public function append($parameters)
     {
         return $this->executeCommand([$parameters], 'append')[0];
     }
@@ -117,7 +117,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return boolean
      */
-    function duplicate($parameters)
+    public function duplicate($parameters)
     {
         return $this->executeCommand([$parameters], 'duplicate')[0];
     }
@@ -128,7 +128,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return boolean
      */
-    function rename($parameters)
+    public function rename($parameters)
     {
         return $this->executeCommand([$parameters], 'rename')[0];
     }
@@ -139,7 +139,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1']
      * @return boolean
      */
-    function delete($parameters)
+    public function delete($parameters)
     {
         return $this->executeCommand([$parameters], 'delete')[0];
     }
@@ -168,7 +168,7 @@ class ObjectStorage
      *    ]
      * @return array
      */
-    function search($parameters)
+    public function search($parameters)
     {
         return $this->executeCommand([$parameters], 'search')[0];
     }
@@ -207,7 +207,7 @@ class ObjectStorage
      * @param string $command The command name
      * @return mixed
      */
-    protected function executeCommand($parameters, $command)
+    private function executeCommand($parameters, $command)
     {
         foreach ($parameters as $index => $object) {
             $parameters[$index]['command'] = $command;
@@ -230,7 +230,7 @@ class ObjectStorage
      * @return resource|false File pointer of false if unsuccessful
      * @throws \ObjectStorage\ErrorException
      */
-    protected function getFilePointerForWriting($filename)
+    private function getFilePointerForWriting($filename)
     {
         if ($this->createFileDirIfNotExists($filename) === false) {
             throw new \ObjectStorage\ErrorException('Cannot write at ' . $filename);
@@ -254,7 +254,7 @@ class ObjectStorage
      * @return resource|false File pointer of false if unsuccessful
      * @throws \ObjectStorage\ErrorException
      */
-    protected function tryGetFilePointerForWriting($filename)
+    private function tryGetFilePointerForWriting($filename)
     {
         if (is_dir($filename)) {
             throw new \ObjectStorage\ErrorException('Cannot write at ' . $filename);
@@ -279,7 +279,7 @@ class ObjectStorage
      * @param boolean $openMetadataFile The metadata object file will be opened if TRUE
      * @return boolean TRUE if successful, FALSE otherwise.
      */
-    protected function openObjectFilesForWriting(&$filePointers, $key, $openObjectFile, $openMetadataFile)
+    private function openObjectFilesForWriting(&$filePointers, $key, $openObjectFile, $openMetadataFile)
     {
         $ok = true;
         if (!isset($filePointers[$key])) {
@@ -313,7 +313,7 @@ class ObjectStorage
      * @param int The type of object file to read. 0 - The main object file, 1 - The metadata file
      * @return string|null The object file content or null if not existent
      */
-    protected function getFileContent($filePointers, $key, $fileType)
+    private function getFileContent($filePointers, $key, $fileType)
     {
 
         if (isset($filePointers[$key], $filePointers[$key][$fileType]) && $filePointers[$key][$fileType] !== null) {
@@ -348,7 +348,7 @@ class ObjectStorage
      * @param array $data The result array
      * @return array An array containing all metadata keys
      */
-    protected function getMetadataFromArray($data)
+    private function getMetadataFromArray($data)
     {
         $result = [];
         foreach ($data as $key => $value) {
@@ -365,7 +365,7 @@ class ObjectStorage
      * @param array $data The result array
      * @return boolean TRUE if metadata exists, FALSE otherwise
      */
-    protected function hasMetadataInArray($data)
+    private function hasMetadataInArray($data)
     {
         foreach ($data as $key => $value) {
             if (substr($key, 0, 9) === 'metadata.') {
@@ -396,7 +396,7 @@ class ObjectStorage
      * @param string $value The value to check
      * @return boolean TRUE if the key and the value are valid, FALSE otherwise
      */
-    protected function isValidMetadata($key, $value)
+    private function isValidMetadata($key, $value)
     {
         if (substr($key, 0, 9) !== 'metadata.' || $key === 'metadata.') {
             return false;
@@ -913,7 +913,7 @@ class ObjectStorage
      * @param array $conditions List of conditions
      * @return boolean TRUE if the conditions are met, FALSE otherwise.
      */
-    protected function areWhereConditionsMet($value, $conditions)
+    private function areWhereConditionsMet($value, $conditions)
     {
         foreach ($conditions as $conditionData) {
             if ($conditionData[0] === '==') {
@@ -943,7 +943,7 @@ class ObjectStorage
      * @param string $filename The filename
      * @return boolean TRUE if successful, FALSE otherwise
      */
-    protected function createFileDirIfNotExists($filename)
+    private function createFileDirIfNotExists($filename)
     {
         $pathinfo = pathinfo($filename);
         if (isset($pathinfo['dirname']) && $pathinfo['dirname'] !== '.') {
@@ -963,7 +963,7 @@ class ObjectStorage
      * 
      * @param string $dir The directory name
      */
-    protected function createDirIfNotExists($dir)
+    private function createDirIfNotExists($dir)
     {
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
@@ -977,7 +977,7 @@ class ObjectStorage
      * @param boolean $recursive If TRUE all files in subdirectories will be returned too
      * @return array An array containing list of all files in the directory specified
      */
-    protected function getFiles($dir, $recursive = false)
+    private function getFiles($dir, $recursive = false)
     {
         $result = [];
         if (is_dir($dir)) {
@@ -1008,7 +1008,7 @@ class ObjectStorage
     /**
      * Creates an error handler that converts errors into exceptions
      */
-    protected function setErrorHandler()
+    private function setErrorHandler()
     {
         set_error_handler(function($errno, $errstr, $errfile, $errline) {
             restore_error_handler();
@@ -1019,7 +1019,7 @@ class ObjectStorage
     /**
      * Removes the error handler registered by setErrorHandler()
      */
-    protected function removeErrorHandler()
+    private function removeErrorHandler()
     {
         restore_error_handler();
     }
@@ -1031,7 +1031,7 @@ class ObjectStorage
      * @return string The result string that will be saved in a file
      * @throws \InvalidArgumentException
      */
-    protected function encodeMetaData($metadata)
+    private function encodeMetaData($metadata)
     {
         if (!is_array($metadata)) {
             throw new \InvalidArgumentException('');
@@ -1046,7 +1046,7 @@ class ObjectStorage
      * @return array The metadata array
      * @throws \InvalidArgumentException
      */
-    protected function decodeMetadata($metadata)
+    private function decodeMetadata($metadata)
     {
         if (!is_string($metadata)) {
             throw new \InvalidArgumentException('');

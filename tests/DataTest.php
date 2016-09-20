@@ -1,18 +1,18 @@
 <?php
 
 /**
- * 
+ * @runTestsInSeparateProcesses
  */
-class DataTest extends PHPUnit_Framework_TestCase
+class DataTest extends ObjectStorageTestCase
 {
 
     /**
-     * @runInSeparateProcess
+     *
      */
     public function testDataState1()
     {
-        removeDataDir();
-        $objectStorage = getInstance();
+        $this->removeDataDir();
+        $objectStorage = $this->getInstance();
 
         // Create initial data
         $result = $objectStorage->set(
@@ -66,7 +66,7 @@ class DataTest extends PHPUnit_Framework_TestCase
                 ]
         );
         $this->assertTrue($result);
-        $this->assertTrue(checkState('ed20ab8c4a519ca9fc10608331cd8bc1
+        $this->assertTrue($this->checkState('ed20ab8c4a519ca9fc10608331cd8bc1
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -115,7 +115,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                         'metadata.year' => '2014',
                     ),
         ));
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         'ed20ab8c4a519ca9fc10608331cd8bc1
 metadata/book-1430260319: content-type:json
 
@@ -147,7 +147,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
 
@@ -182,7 +182,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 array(
                     'metadata.rating' => '3.4',
         ));
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
 
@@ -213,7 +213,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         '0b1f6ab2f7435f15566e50a89a6173ff
 metadata/book-1430260319: content-type:json
 
@@ -247,7 +247,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         '5acced67220df7bf1d104773c67555eb
 metadata/book-1430260319: content-type:json
 
@@ -281,7 +281,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
 
@@ -314,7 +314,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState(
+        $this->assertTrue($this->checkState(
                         '65c9e2014d2e54752d99a49f56c3fe1e
 metadata/book-1000000000-comments: content-type:json
 
@@ -366,7 +366,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                         'metadata.authors' => '["Kevin Tatroe", "Peter MacIntyre", "Rasmus Lerdorf"]',
                     ),
         ));
-        $this->assertTrue(checkState('65c9e2014d2e54752d99a49f56c3fe1e
+        $this->assertTrue($this->checkState('65c9e2014d2e54752d99a49f56c3fe1e
 metadata/book-1000000000-comments: content-type:json
 
 {"ivo":"test"}
@@ -411,7 +411,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
             'metadata.year' => '2013',
             'metadata.rating' => '3.4',
         ));
-        $this->assertTrue(checkState('65c9e2014d2e54752d99a49f56c3fe1e
+        $this->assertTrue($this->checkState('65c9e2014d2e54752d99a49f56c3fe1e
 metadata/book-1000000000-comments: content-type:json
 
 {"ivo":"test"}
@@ -446,7 +446,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('9b0ef8154be7ef0b7b939f7ca2e9af77
+        $this->assertTrue($this->checkState('9b0ef8154be7ef0b7b939f7ca2e9af77
 metadata/book-1000000000-comments: content-type:json
 
 {"ivo":"test"}
@@ -486,7 +486,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('8171d7214894ef37665cd74576bde01f
+        $this->assertTrue($this->checkState('8171d7214894ef37665cd74576bde01f
 metadata/book-1000000000-comments: content-type:json
 
 {"ivo":"test"}
@@ -574,7 +574,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
         );
         $this->assertTrue($result === true);
 
-        $this->assertTrue(checkState('d41d8cd98f00b204e9800998ecf8427e
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
 
@@ -710,7 +710,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
             13 => true,
             14 => true,
         ));
-        $this->assertTrue(checkState('d41d8cd98f00b204e9800998ecf8427e
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
 
@@ -723,7 +723,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('e6ff92ea7fb169ba3e87676f3bbc379e
+        $this->assertTrue($this->checkState('e6ff92ea7fb169ba3e87676f3bbc379e
 metadata/test-delete-metadata: content-type:json
 
 {"rating":"3.4"}
@@ -737,7 +737,7 @@ objects/test-delete-metadata:
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('366ff7633ebcec69cf1954175e4aa7fc
+        $this->assertTrue($this->checkState('366ff7633ebcec69cf1954175e4aa7fc
 objects/test-delete-metadata: '));
 
         $result = $objectStorage->delete(
@@ -746,7 +746,7 @@ objects/test-delete-metadata: '));
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('d41d8cd98f00b204e9800998ecf8427e
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
 
@@ -773,7 +773,7 @@ objects/test-delete-metadata: '));
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('f34e94bee39fd95da85fc91a3ca302ea
+        $this->assertTrue($this->checkState('f34e94bee39fd95da85fc91a3ca302ea
 objects/prefix1/dataa: A
 objects/prefix1/datab: B
 objects/prefix2/datac: C
@@ -799,7 +799,47 @@ objects/prefix2/datac: C
                 'body' => 'B',
             ),
         ));
-        $this->assertTrue(checkState('f34e94bee39fd95da85fc91a3ca302ea
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', 'prefix1/', 'startsWith']
+                    ],
+                    'result' => ['key', 'body']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'prefix1/dataa',
+                'body' => 'A',
+            ),
+            1 =>
+            array(
+                'key' => 'prefix1/datab',
+                'body' => 'B',
+            ),
+        ));
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', 'efix1/da', 'search']
+                    ],
+                    'result' => ['key', 'body']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'prefix1/dataa',
+                'body' => 'A',
+            ),
+            1 =>
+            array(
+                'key' => 'prefix1/datab',
+                'body' => 'B',
+            ),
+        ));
+        $this->assertTrue($this->checkState('f34e94bee39fd95da85fc91a3ca302ea
 objects/prefix1/dataa: A
 objects/prefix1/datab: B
 objects/prefix2/datac: C
@@ -823,20 +863,20 @@ objects/prefix2/datac: C
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('d41d8cd98f00b204e9800998ecf8427e
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
 
-        removeDataDir();
+        $this->removeDataDir();
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testEmptyData()
     {
-        removeDataDir();
-        $objectStorage = getInstance();
+        $this->removeDataDir();
+        $objectStorage = $this->getInstance();
 
         $result = $objectStorage->set(
                 [
@@ -845,7 +885,7 @@ objects/prefix2/datac: C
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('9dc100d57ca4b13580cd101583e78059
+        $this->assertTrue($this->checkState('9dc100d57ca4b13580cd101583e78059
 objects/emptydata: 
 '));
 
@@ -865,7 +905,7 @@ objects/emptydata:
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('d41d8cd98f00b204e9800998ecf8427e
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
         $result = $objectStorage->get(
                 [
@@ -877,7 +917,7 @@ objects/emptydata:
 
         //echo "\n\n" . var_export($result) . "\n\n" . getState() . "\n\n";
 
-        removeDataDir();
+        $this->removeDataDir();
     }
 
 }

@@ -6,7 +6,7 @@
          convertWarningsToExceptions="true"
          stopOnFailure="true">
     <testsuites>
-        <testsuite name="Object Storage Test Suite">
+        <testsuite>
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

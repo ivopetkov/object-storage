@@ -1,10 +1,13 @@
 <?php
 
-class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
+/**
+ * @runTestsInSeparateProcesses
+ */
+class InvalidArgumentsTest extends ObjectStorageTestCase
 {
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidArgumentsInConstructor()
     {
@@ -13,11 +16,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey1()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -28,11 +31,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey2()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -43,11 +46,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey3()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -58,11 +61,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey4()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -73,11 +76,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey5()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -88,11 +91,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey6()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -103,11 +106,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey7()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -118,11 +121,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey8()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -133,11 +136,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey9()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -148,11 +151,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey10()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -163,11 +166,11 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey11()
     {
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -178,12 +181,12 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey12()
     {
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -194,12 +197,12 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidKey13()
     {
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -210,12 +213,12 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidMetadata1()
     {
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -226,12 +229,12 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidMetadata2()
     {
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [
@@ -242,12 +245,12 @@ class InvalidArgumentsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testInvalidMetadata3()
     {
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
                 [

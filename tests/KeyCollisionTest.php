@@ -1,16 +1,19 @@
 <?php
 
-class KeyCollisionTest extends PHPUnit_Framework_TestCase
+/**
+ * @runTestsInSeparateProcesses
+ */
+class KeyCollisionTest extends ObjectStorageTestCase
 {
 
     /**
-     * @runInSeparateProcess
+     *
      */
     public function testFileWhenThereIsDirWithTheSameKey()
     {
-        removeDataDir();
+        $this->removeDataDir();
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
 
         $result = $objectStorage->set(
                 [
@@ -19,7 +22,7 @@ class KeyCollisionTest extends PHPUnit_Framework_TestCase
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('46fe6220dc64b1fdac801a01f30f9296
+        $this->assertTrue($this->checkState('46fe6220dc64b1fdac801a01f30f9296
 objects/data1/data2: data
 '));
 
@@ -39,17 +42,17 @@ objects/data1/data2: data
      */
     public function testFileWhenThereIsDirWithTheSameKeyCleanUp()
     {
-        removeDataDir();
+        $this->removeDataDir();
     }
 
     /**
-     * @runInSeparateProcess
+     * 
      */
     public function testDirWhenThereIsFileWithTheSameKey()
     {
-        removeDataDir();
+        $this->removeDataDir();
 
-        $objectStorage = getInstance();
+        $objectStorage = $this->getInstance();
 
         $result = $objectStorage->set(
                 [
@@ -58,7 +61,7 @@ objects/data1/data2: data
                 ]
         );
         $this->assertTrue($result === true);
-        $this->assertTrue(checkState('eaa438b85d60666c5b30b3ed8f4affc6
+        $this->assertTrue($this->checkState('eaa438b85d60666c5b30b3ed8f4affc6
 objects/data1: data
 '));
 
@@ -78,7 +81,7 @@ objects/data1: data
      */
     public function testDirWhenThereIsFileWithTheSameKeyCleanUp()
     {
-        removeDataDir();
+        $this->removeDataDir();
     }
 
 }
