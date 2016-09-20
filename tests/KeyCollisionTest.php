@@ -32,10 +32,8 @@ objects/data1/data2: data
         );
 
         //echo "\n\n" . var_export($result) . "\n\n" . getState() . "\n\n";
-
-        
     }
-    
+
     /**
      * 
      */
@@ -73,7 +71,6 @@ objects/data1: data
         );
 
         //echo "\n\n" . var_export($result) . "\n\n" . getState() . "\n\n";
-
     }
 
     /**

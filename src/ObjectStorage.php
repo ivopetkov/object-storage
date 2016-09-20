@@ -11,47 +11,53 @@ class ObjectStorage
 {
 
     /**
-     * 
+     * The current library version
      */
     const VERSION = '0.1.2';
 
     /**
-     *
+     * The directory where the objects will be stored
+     * 
      * @var string 
      */
     public $objectsDir = null;
 
     /**
-     *
+     * The directory where the objects metadata will be stored
+     * 
      * @var string 
      */
     public $metadataDir = null;
 
     /**
-     *
+     * The directory where temp library data will be stored
+     * 
      * @var string 
      */
     public $tempDir = null;
 
     /**
-     *
+     * Number of retries to make when waiting for locked (accessed by other scripts) objects
+     * 
      * @var int 
      */
     public $lockRetriesCount = 3;
 
     /**
-     *
+     * Time (in microseconds) between retries when waiting for locked objects
+     * 
      * @var int 
      */
     public $lockRetryDelay = 500000; // microseconds
 
     /**
+     * Creates a new Object storage instance
      * 
-     * @param string $dir
+     * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files)
      * @throws \InvalidArgumentException
      */
 
-    function __construct($dir = 'data/')
+    public function __construct($dir = 'data/')
     {
         if (!is_string($dir)) {
             throw new \InvalidArgumentException('The dir argument must be a string');
@@ -63,9 +69,10 @@ class ObjectStorage
     }
 
     /**
-     * Retrieves object data for specified key
-     * @param array $parameters
-     * @return array
+     * Retrieves object data for a specified key
+     * 
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
+     * @return array An array containing the result data if existent, empty array otherwise
      */
     function get($parameters)
     {
@@ -83,9 +90,10 @@ class ObjectStorage
 //    }
 
     /**
+     * Saves object data for a specified key
      * 
-     * @param array $parameters
-     * @return boolean
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']
+     * @return boolean TRUE if successful, FALSE otherwise
      */
     function set($parameters)
     {
@@ -93,8 +101,9 @@ class ObjectStorage
     }
 
     /**
+     * Appends object data for a specified key. The object will be created if not existent.
      * 
-     * @param array $parameters
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1']
      * @return boolean
      */
     function append($parameters)
@@ -103,8 +112,9 @@ class ObjectStorage
     }
 
     /**
+     * Creates a copy of an object. It's metadata is copied too.
      * 
-     * @param array $parameters
+     * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return boolean
      */
     function duplicate($parameters)
@@ -113,8 +123,9 @@ class ObjectStorage
     }
 
     /**
+     * Renames an object
      * 
-     * @param array $parameters
+     * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return boolean
      */
     function rename($parameters)
@@ -123,8 +134,9 @@ class ObjectStorage
     }
 
     /**
+     * Deletes an object and it's metadata
      * 
-     * @param array $parameters
+     * @param array $parameters Data in the following format: ['key' => 'example1']
      * @return boolean
      */
     function delete($parameters)
@@ -133,8 +145,27 @@ class ObjectStorage
     }
 
     /**
+     * Retrieves a list of all object matching the criteria specified
      * 
-     * @param array $parameters
+     * @param array $parameters Data in the following format:
+     *    // Finds objects by key 
+     *    [
+     *        'where' => [
+     *            ['key', ['book-1449392776', 'book-1430268158']]],
+     *        'result' => ['key', 'body', 'metadata.title']
+     *    ]
+     *    // Finds objects by metadata 
+     *    [
+     *        'where' => [
+     *            ['metadata.year', '2013']
+     *        'result' => ['key', 'body', 'metadata.title']
+     *    ]
+     *    // Finds objects by regular expression 
+     *    [
+     *        'where' => [
+     *            ['key', '^prefix1\/', 'regexp']
+     *        'result' => ['key', 'body', 'metadata.title']
+     *    ]
      * @return array
      */
     function search($parameters)
@@ -170,9 +201,10 @@ class ObjectStorage
 //    }
 
     /**
+     * Executes single command
      * 
-     * @param array $parameters
-     * @param string $command
+     * @param array $parameters The command parameters
+     * @param string $command The command name
      * @return mixed
      */
     protected function executeCommand($parameters, $command)
@@ -192,9 +224,10 @@ class ObjectStorage
     }
 
     /**
+     * Returns file pointer for writing retrying several times. Returns false if unsuccessful.
      * 
-     * @param string $filename
-     * @return resource|false
+     * @param string $filename The filename
+     * @return resource|false File pointer of false if unsuccessful
      * @throws \ObjectStorage\ErrorException
      */
     protected function getFilePointerForWriting($filename)
@@ -215,9 +248,10 @@ class ObjectStorage
     }
 
     /**
+     * Returns file pointer for writing or false
      * 
-     * @param string $filename
-     * @return resource|false
+     * @param string $filename The filename
+     * @return resource|false File pointer of false if unsuccessful
      * @throws \ObjectStorage\ErrorException
      */
     protected function tryGetFilePointerForWriting($filename)
@@ -230,21 +264,20 @@ class ObjectStorage
         if ($filePointer !== false) {
             $flockResult = flock($filePointer, LOCK_EX | LOCK_NB);
             if ($flockResult !== false) {
-                $this->removeErrorHandler();
                 return $filePointer;
             }
         }
-        $this->removeErrorHandler();
         return false;
     }
 
     /**
+     * Opens object files (main file or metadata file) for writing
      * 
-     * @param array $filePointers
-     * @param string $key
-     * @param boolean $openObjectFile
-     * @param boolean $openMetadataFile
-     * @return boolean
+     * @param array $filePointers List of opened files pointers
+     * @param string $key The object key
+     * @param boolean $openObjectFile The main object file will be opened if TRUE
+     * @param boolean $openMetadataFile The metadata object file will be opened if TRUE
+     * @return boolean TRUE if successful, FALSE otherwise.
      */
     protected function openObjectFilesForWriting(&$filePointers, $key, $openObjectFile, $openMetadataFile)
     {
@@ -273,11 +306,12 @@ class ObjectStorage
     }
 
     /**
+     * Reads and returns a object file content
      * 
-     * @param array $filePointers
-     * @param string $key
-     * @param int 0 - object file, 1 - metadata file
-     * @return string|null
+     * @param array $filePointers List of already opened files. If the key requested is not in that list it will be opened.
+     * @param string $key The object key
+     * @param int The type of object file to read. 0 - The main object file, 1 - The metadata file
+     * @return string|null The object file content or null if not existent
      */
     protected function getFileContent($filePointers, $key, $fileType)
     {
@@ -309,9 +343,10 @@ class ObjectStorage
     }
 
     /**
+     * Finds all metadata keys in an result array
      * 
-     * @param array $data
-     * @return array
+     * @param array $data The result array
+     * @return array An array containing all metadata keys
      */
     protected function getMetadataFromArray($data)
     {
@@ -325,9 +360,10 @@ class ObjectStorage
     }
 
     /**
+     * Checks whether there is metadata in the result array specified
      * 
-     * @param array $data
-     * @return boolean
+     * @param array $data The result array
+     * @return boolean TRUE if metadata exists, FALSE otherwise
      */
     protected function hasMetadataInArray($data)
     {
@@ -340,9 +376,10 @@ class ObjectStorage
     }
 
     /**
+     * Checks whether the key specified is valid
      * 
-     * @param string $key
-     * @return boolean
+     * @param string $key The key to check
+     * @return boolean TRUE if the key is valid, FALSE otherwise
      */
     public function isValidKey($key)
     {
@@ -353,10 +390,11 @@ class ObjectStorage
     }
 
     /**
+     * Checks whether a metadata key and value are valid
      * 
-     * @param string $key
-     * @param string $value
-     * @return boolean
+     * @param string $key The key to check
+     * @param string $value The value to check
+     * @return boolean TRUE if the key and the value are valid, FALSE otherwise
      */
     protected function isValidMetadata($key, $value)
     {
@@ -370,20 +408,34 @@ class ObjectStorage
     }
 
     /**
+     * Executes list of commmands
      * 
-     * @param array $commands
-     * @return array
+     * @param array $commands Array containing list of commands in the following format:
+     *    [
+     *        'command' => 'set',
+     *        'key' => 'example1',
+     *        'body' => 'body1'
+     *    ],
+     *    [
+     *        'command' => 'append',
+     *        'key' => 'example2',
+     *        'body' => 'body2'
+     *    ]
+     * @return array Array containing the results for the commands
      * @throws \ObjectStorage\ErrorException
      * @throws \InvalidArgumentException
      * @throws \ObjectStorage\ObjectLockedException
      */
-    function execute($commands)
+    public function execute($commands)
     {
         $result = [];
         $lockFailure = false;
         $filePointers = [];
         $filesToDelete = [];
         $cache = [];
+
+        $this->setErrorHandler();
+
         // 1 - validations and caching
         // 2 - lock files
         // 3 - do job
@@ -841,6 +893,7 @@ class ObjectStorage
         unset($filePointers);
 
         if ($lockFailure) {
+            $this->removeErrorHandler();
             throw new \ObjectStorage\ObjectLockedException();
         } else {
             foreach ($filesToDelete as $filename => $one) {
@@ -848,15 +901,17 @@ class ObjectStorage
                     unlink($filename);
                 }
             }
+            $this->removeErrorHandler();
         }
         return $result;
     }
 
     /**
+     * Checks whether the where conditions are met for a specified value
      * 
-     * @param string $value
-     * @param array $conditions
-     * @return boolean
+     * @param string $value The value to check
+     * @param array $conditions List of conditions
+     * @return boolean TRUE if the conditions are met, FALSE otherwise.
      */
     protected function areWhereConditionsMet($value, $conditions)
     {
@@ -883,9 +938,10 @@ class ObjectStorage
     }
 
     /**
+     * Creates the directory of the file specified
      * 
-     * @param string $filename
-     * @return boolean
+     * @param string $filename The filename
+     * @return boolean TRUE if successful, FALSE otherwise
      */
     protected function createFileDirIfNotExists($filename)
     {
@@ -903,8 +959,9 @@ class ObjectStorage
     }
 
     /**
+     * Creates a directory if not existent
      * 
-     * @param string $dir
+     * @param string $dir The directory name
      */
     protected function createDirIfNotExists($dir)
     {
@@ -914,10 +971,11 @@ class ObjectStorage
     }
 
     /**
+     * Returns list of files in the directory specified
      * 
-     * @param string $dir
-     * @param boolean $recursive
-     * @return array
+     * @param string $dir The directory name
+     * @param boolean $recursive If TRUE all files in subdirectories will be returned too
+     * @return array An array containing list of all files in the directory specified
      */
     protected function getFiles($dir, $recursive = false)
     {
@@ -948,29 +1006,18 @@ class ObjectStorage
     }
 
     /**
-     * 
-     * @param int $errno
-     * @param string $errstr
-     * @param string $errfile
-     * @param string $errline
-     * @throws \ObjectStorage\ErrorException
-     */
-    protected function throwExceptionForError($errno, $errstr, $errfile, $errline)
-    {
-        restore_error_handler();
-        throw new \ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
-    }
-
-    /**
-     * 
+     * Creates an error handler that converts errors into exceptions
      */
     protected function setErrorHandler()
     {
-        set_error_handler([$this, 'throwExceptionForError']);
+        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+            restore_error_handler();
+            throw new \ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
     }
 
     /**
-     * 
+     * Removes the error handler registered by setErrorHandler()
      */
     protected function removeErrorHandler()
     {
@@ -978,9 +1025,10 @@ class ObjectStorage
     }
 
     /**
+     * Converts metadata array into string that will be saved in a file
      * 
-     * @param array $metadata
-     * @return string
+     * @param array $metadata The metadata array
+     * @return string The result string that will be saved in a file
      * @throws \InvalidArgumentException
      */
     protected function encodeMetaData($metadata)
@@ -992,9 +1040,10 @@ class ObjectStorage
     }
 
     /**
+     * Converts metadata from a string format to an array
      * 
-     * @param string $metadata
-     * @return array
+     * @param string $metadata The metadata in string format
+     * @return array The metadata array
      * @throws \InvalidArgumentException
      */
     protected function decodeMetadata($metadata)

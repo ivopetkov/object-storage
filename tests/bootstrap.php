@@ -28,7 +28,8 @@ function checkState($expectedState)
     return $md5 !== md5(getState());
 }
 
-function getDataDir(){
+function getDataDir()
+{
     return sys_get_temp_dir() . '/object-storage-tests/data/';
 }
 
