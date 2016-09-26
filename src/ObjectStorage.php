@@ -15,7 +15,7 @@ class ObjectStorage
     /**
      * The current library version
      */
-    const VERSION = '0.1.2';
+    const VERSION = 'dev';
 
     /**
      * The directory where the objects will be stored
@@ -95,55 +95,55 @@ class ObjectStorage
      * Saves object data for a specified key
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']
-     * @return boolean TRUE if successful, FALSE otherwise
+     * @return void No value is returned
      */
     public function set($parameters)
     {
-        return $this->executeCommand([$parameters], 'set')[0];
+        $this->executeCommand([$parameters], 'set')[0];
     }
 
     /**
      * Appends object data for a specified key. The object will be created if not existent.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1']
-     * @return boolean
+     * @return void No value is returned
      */
     public function append($parameters)
     {
-        return $this->executeCommand([$parameters], 'append')[0];
+        $this->executeCommand([$parameters], 'append')[0];
     }
 
     /**
      * Creates a copy of an object. It's metadata is copied too.
      * 
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
-     * @return boolean
+     * @return void No value is returned
      */
     public function duplicate($parameters)
     {
-        return $this->executeCommand([$parameters], 'duplicate')[0];
+        $this->executeCommand([$parameters], 'duplicate')[0];
     }
 
     /**
      * Renames an object
      * 
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
-     * @return boolean
+     * @return void No value is returned
      */
     public function rename($parameters)
     {
-        return $this->executeCommand([$parameters], 'rename')[0];
+        $this->executeCommand([$parameters], 'rename')[0];
     }
 
     /**
      * Deletes an object and it's metadata
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1']
-     * @return boolean
+     * @return void No value is returned
      */
     public function delete($parameters)
     {
-        return $this->executeCommand([$parameters], 'delete')[0];
+        $this->executeCommand([$parameters], 'delete')[0];
     }
 
     /**
@@ -168,7 +168,7 @@ class ObjectStorage
      *            ['key', '^prefix1\/', 'regexp']
      *        'result' => ['key', 'body', 'metadata.title']
      *    ]
-     * @return array
+     * @return array An array containing all matching objects
      */
     public function search($parameters)
     {

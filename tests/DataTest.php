@@ -15,7 +15,7 @@ class DataTest extends ObjectStorageTestCase
         $objectStorage = $this->getInstance();
 
         // Create initial data
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-1449392776',
                     'body' => 'book 1449392776 content in pdf format',
@@ -24,8 +24,7 @@ class DataTest extends ObjectStorageTestCase
                     'metadata.year' => '2013'
                 ]
         );
-        $this->assertTrue($result);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-1430260319',
                     'body' => 'book 1430260319 content in pdf format',
@@ -34,8 +33,7 @@ class DataTest extends ObjectStorageTestCase
                     'metadata.year' => '2013'
                 ]
         );
-        $this->assertTrue($result);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-1430268158',
                     'body' => 'book 1430268158 content in pdf format',
@@ -44,28 +42,24 @@ class DataTest extends ObjectStorageTestCase
                     'metadata.year' => '2014'
                 ]
         );
-        $this->assertTrue($result);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-1000000000'
                 ]
         );
-        $this->assertTrue($result);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-2000000000',
                     'body' => 'book 2000000000 content in pdf format'
                 ]
         );
-        $this->assertTrue($result);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'books/3000000000',
                     'body' => 'book 3000000000 content in pdf format',
                     'metadata.year' => '2014'
                 ]
         );
-        $this->assertTrue($result);
         $this->assertTrue($this->checkState('ed20ab8c4a519ca9fc10608331cd8bc1
 metadata/book-1430260319: content-type:json
 
@@ -140,13 +134,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // Set (update metadata)
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-1449392776',
                     'metadata.rating' => '3.4'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState(
                         '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
@@ -206,13 +199,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // Set
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'book-1449392776-comments',
                     'body' => "John Smith: This book is awaseome.\n"
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState(
                         '0b1f6ab2f7435f15566e50a89a6173ff
 metadata/book-1430260319: content-type:json
@@ -240,13 +232,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // Append
-        $result = $objectStorage->append(
+        $objectStorage->append(
                 [
                     'key' => 'book-1449392776-comments',
                     'body' => "Oliver Mark: Best book I've ever read.\n"
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState(
                         '5acced67220df7bf1d104773c67555eb
 metadata/book-1430260319: content-type:json
@@ -275,12 +266,11 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // delete
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1449392776-comments'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState(
                         '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
@@ -306,14 +296,13 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // append
-        $result = $objectStorage->append(
+        $objectStorage->append(
                 [
                     'key' => 'book-1000000000-comments',
                     'body' => "Ivo Petkov: Great!.\n",
                     'metadata.ivo' => "test"
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState(
                         '65c9e2014d2e54752d99a49f56c3fe1e
 metadata/book-1000000000-comments: content-type:json
@@ -439,13 +428,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // duplicate
-        $result = $objectStorage->duplicate(
+        $objectStorage->duplicate(
                 [
                     'sourceKey' => 'book-1449392776',
                     'targetKey' => 'book-1449392776-copy'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('9b0ef8154be7ef0b7b939f7ca2e9af77
 metadata/book-1000000000-comments: content-type:json
 
@@ -479,13 +467,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // rename
-        $result = $objectStorage->rename(
+        $objectStorage->rename(
                 [
                     'sourceKey' => 'book-1449392776',
                     'targetKey' => 'book-5000000000'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('8171d7214894ef37665cd74576bde01f
 metadata/book-1000000000-comments: content-type:json
 
@@ -519,61 +506,51 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // delete
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1000000000'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1000000000-comments'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1449392776'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1430260319'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1430268158'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-2000000000'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'books/3000000000'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-1449392776-copy'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'book-5000000000'
                 ]
         );
-        $this->assertTrue($result === true);
-
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
@@ -716,13 +693,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
 
         // test delete metadata
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'test-delete-metadata',
                     'metadata.rating' => '3.4'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('e6ff92ea7fb169ba3e87676f3bbc379e
 metadata/test-delete-metadata: content-type:json
 
@@ -730,49 +706,44 @@ metadata/test-delete-metadata: content-type:json
 objects/test-delete-metadata: 
 '));
 
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'test-delete-metadata',
                     'metadata.rating' => ''
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('366ff7633ebcec69cf1954175e4aa7fc
 objects/test-delete-metadata: '));
 
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'test-delete-metadata'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
 
 
         // regexp search
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'prefix1/dataa',
                     'body' => 'A'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'prefix1/datab',
                     'body' => 'B'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'prefix2/datac',
                     'body' => 'C'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('f34e94bee39fd95da85fc91a3ca302ea
 objects/prefix1/dataa: A
 objects/prefix1/datab: B
@@ -845,24 +816,21 @@ objects/prefix1/datab: B
 objects/prefix2/datac: C
 '));
 
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'prefix1/dataa'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'prefix1/datab'
                 ]
         );
-        $this->assertTrue($result === true);
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'prefix2/datac'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
 
@@ -878,13 +846,12 @@ objects/prefix2/datac: C
         $this->removeDataDir();
         $objectStorage = $this->getInstance();
 
-        $result = $objectStorage->set(
+        $objectStorage->set(
                 [
                     'key' => 'emptydata',
                     'body' => ''
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('9dc100d57ca4b13580cd101583e78059
 objects/emptydata: 
 '));
@@ -899,12 +866,11 @@ objects/emptydata:
             'body' => '',
         ));
 
-        $result = $objectStorage->delete(
+        $objectStorage->delete(
                 [
                     'key' => 'emptydata'
                 ]
         );
-        $this->assertTrue($result === true);
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
         $result = $objectStorage->get(

@@ -121,10 +121,10 @@ _Parameters_
 
 _Returns_
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TRUE if successful, FALSE otherwise
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No value is returned
 
 ```php
-public boolean append ( array $parameters )
+public void append ( array $parameters )
 ```
 
 Appends object data for a specified key. The object will be created if not existent.
@@ -137,10 +137,10 @@ _Parameters_
 
 _Returns_
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No value is returned
 
 ```php
-public boolean duplicate ( array $parameters )
+public void duplicate ( array $parameters )
 ```
 
 Creates a copy of an object. It's metadata is copied too.
@@ -153,10 +153,10 @@ _Parameters_
 
 _Returns_
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No value is returned
 
 ```php
-public boolean rename ( array $parameters )
+public void rename ( array $parameters )
 ```
 
 Renames an object
@@ -169,10 +169,10 @@ _Parameters_
 
 _Returns_
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No value is returned
 
 ```php
-public boolean delete ( array $parameters )
+public void delete ( array $parameters )
 ```
 
 Deletes an object and it's metadata
@@ -185,7 +185,7 @@ _Parameters_
 
 _Returns_
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No value is returned
 
 ```php
 public array search ( array $parameters )
@@ -201,7 +201,7 @@ _Parameters_
 
 _Returns_
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An array containing all matching objects
 
 ```php
 public boolean isValidKey ( string $key )
