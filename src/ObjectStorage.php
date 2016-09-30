@@ -64,10 +64,10 @@ class ObjectStorage
         if (!is_string($dir)) {
             throw new \InvalidArgumentException('The dir argument must be a string');
         }
-        $dir = rtrim($dir, '/\\') . '/';
-        $this->objectsDir = $dir . 'objects/';
-        $this->metadataDir = $dir . 'metadata/';
-        $this->tempDir = $dir . 'temp/';
+        $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
+        $this->objectsDir = $dir . 'objects' . DIRECTORY_SEPARATOR;
+        $this->metadataDir = $dir . 'metadata' . DIRECTORY_SEPARATOR;
+        $this->tempDir = $dir . 'temp' . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -80,16 +80,6 @@ class ObjectStorage
     {
         return $this->executeCommand([$parameters], 'get')[0];
     }
-
-    /**
-     * 
-     * @param array $parameters
-     * @return boolean
-     */
-//    function add($parameters)
-//    {
-//        return $this->executeCommand([$parameters], 'add')[0];
-//    }
 
     /**
      * Saves object data for a specified key
@@ -175,33 +165,6 @@ class ObjectStorage
         return $this->executeCommand([$parameters], 'search')[0];
     }
 
-//    function getObjectBody($key)
-//    {
-//        $parameters = [
-//            [
-//                'where' => [
-//                    ['key', $key]
-//                ],
-//                'result' => ['key', 'body']
-//            ]
-//        ];
-//        $result = $this->executeCommand($parameters, 'search');
-//        return isset($result[0], $result[0][0]) ? $result[0][0]['body'] : false;
-//    }
-//
-//    function objectExists($key)
-//    {
-//        $parameters = [
-//            [
-//                'where' => [
-//                    ['key', $key]
-//                ]
-//            ]
-//        ];
-//        $result = $this->executeCommand($parameters, 'search');
-//        return isset($result[0], $result[0][0]);
-//    }
-
     /**
      * Executes single command
      * 
@@ -222,159 +185,8 @@ class ObjectStorage
             unset($object);
         }
         unset($parameters);
+        unset($command);
         return $result;
-    }
-
-    /**
-     * Returns file pointer for writing retrying several times. Returns false if unsuccessful.
-     * 
-     * @param string $filename The filename
-     * @return resource|false File pointer of false if unsuccessful
-     * @throws \IvoPetkov\ObjectStorage\ErrorException
-     */
-    private function getFilePointerForWriting($filename)
-    {
-        if ($this->createFileDirIfNotExists($filename) === false) {
-            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
-        }
-        for ($i = 0; $i < $this->lockRetriesCount; $i++) {
-            $filePointer = $this->tryGetFilePointerForWriting($filename);
-            if ($filePointer !== false) {
-                return $filePointer;
-            }
-            if ($i < $this->lockRetriesCount - 1) {
-                usleep($this->lockRetryDelay);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns file pointer for writing or false
-     * 
-     * @param string $filename The filename
-     * @return resource|false File pointer of false if unsuccessful
-     * @throws \IvoPetkov\ObjectStorage\ErrorException
-     */
-    private function tryGetFilePointerForWriting($filename)
-    {
-        if (is_dir($filename)) {
-            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
-        }
-        $this->setErrorHandler();
-        $filePointer = fopen($filename, "c+");
-        if ($filePointer !== false) {
-            $flockResult = flock($filePointer, LOCK_EX | LOCK_NB);
-            if ($flockResult !== false) {
-                return $filePointer;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Opens object files (main file or metadata file) for writing
-     * 
-     * @param array $filePointers List of opened files pointers
-     * @param string $key The object key
-     * @param boolean $openObjectFile The main object file will be opened if TRUE
-     * @param boolean $openMetadataFile The metadata object file will be opened if TRUE
-     * @return boolean TRUE if successful, FALSE otherwise.
-     */
-    private function openObjectFilesForWriting(&$filePointers, $key, $openObjectFile, $openMetadataFile)
-    {
-        $ok = true;
-        if (!isset($filePointers[$key])) {
-            $filePointers[$key] = [null, null];
-        }
-        if ($openObjectFile && $filePointers[$key][0] === null) {
-            $objectFilePointer = $this->getFilePointerForWriting($this->objectsDir . $key);
-            if ($objectFilePointer === false) {
-                $ok = false;
-            } else {
-                $filePointers[$key][0] = $objectFilePointer;
-            }
-        }
-
-        if ($openMetadataFile && $filePointers[$key][1] === null) {
-            $metadataFilePointer = $this->getFilePointerForWriting($this->metadataDir . $key);
-            if ($metadataFilePointer === false) {
-                $ok = false;
-            } else {
-                $filePointers[$key][1] = $metadataFilePointer;
-            }
-        }
-        return $ok;
-    }
-
-    /**
-     * Reads and returns a object file content
-     * 
-     * @param array $filePointers List of already opened files. If the key requested is not in that list it will be opened.
-     * @param string $key The object key
-     * @param int The type of object file to read. 0 - The main object file, 1 - The metadata file
-     * @return string|null The object file content or null if not existent
-     */
-    private function getFileContent($filePointers, $key, $fileType)
-    {
-
-        if (isset($filePointers[$key], $filePointers[$key][$fileType]) && $filePointers[$key][$fileType] !== null) {
-            $pointerPosition = ftell($filePointers[$key][$fileType]);
-            fseek($filePointers[$key][$fileType], 0);
-            $contents = '';
-            while (!feof($filePointers[$key][$fileType])) {
-                $contents .= fread($filePointers[$key][$fileType], 8192);
-            }
-            fseek($filePointers[$key][$fileType], $pointerPosition);
-            return $contents;
-        } else {
-            $filename = ($fileType === 0 ? $this->objectsDir : $this->metadataDir) . $key;
-            if (is_file($filename)) {
-                if (filesize($filename) === 0) {
-                    return '';
-                } else {
-                    $filePointer = fopen($filename, "r");
-                    flock($filePointer, LOCK_SH);
-                    $content = fread($filePointer, filesize($filename));
-                    fclose($filePointer);
-                    return $content;
-                }
-            }
-            return null;
-        }
-    }
-
-    /**
-     * Finds all metadata keys in an result array
-     * 
-     * @param array $data The result array
-     * @return array An array containing all metadata keys
-     */
-    private function getMetadataFromArray($data)
-    {
-        $result = [];
-        foreach ($data as $key => $value) {
-            if (substr($key, 0, 9) === 'metadata.') {
-                $result[substr($key, 9)] = $value;
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * Checks whether there is metadata in the result array specified
-     * 
-     * @param array $data The result array
-     * @return boolean TRUE if metadata exists, FALSE otherwise
-     */
-    private function hasMetadataInArray($data)
-    {
-        foreach ($data as $key => $value) {
-            if (substr($key, 0, 9) === 'metadata.') {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -389,24 +201,6 @@ class ObjectStorage
             return false;
         }
         return preg_match("/^[a-z0-9\.\/\-\_]*$/", $key) === 1;
-    }
-
-    /**
-     * Checks whether a metadata key and value are valid
-     * 
-     * @param string $key The key to check
-     * @param string $value The value to check
-     * @return boolean TRUE if the key and the value are valid, FALSE otherwise
-     */
-    private function isValidMetadata($key, $value)
-    {
-        if (substr($key, 0, 9) !== 'metadata.' || $key === 'metadata.') {
-            return false;
-        }
-        if (!is_string($value)) {
-            return false;
-        }
-        return preg_match("/^[a-zA-Z0-9\.\-\_]*$/", $key) === 1;
     }
 
     /**
@@ -436,7 +230,77 @@ class ObjectStorage
         $filesToDelete = [];
         $cache = [];
 
-        $this->setErrorHandler();
+        $encodeMetaData = function($metadata) {
+            return "content-type:json\n\n" . json_encode($metadata);
+        };
+
+        $decodeMetadata = function ($metadata) {
+            if (!isset($metadata{0})) {
+                return [];
+            }
+            $parts = explode("\n\n", $metadata, 2);
+            if (!isset($parts[1])) {
+                return [];
+            }
+            return json_decode($parts[1], true);
+        };
+
+        $getMetadataFromArray = function($data) {
+            $result = [];
+            foreach ($data as $key => $value) {
+                if (substr($key, 0, 9) === 'metadata.') {
+                    $result[substr($key, 9)] = $value;
+                }
+            }
+            return $result;
+        };
+
+        $hasMetadataInArray = function($data) {
+            foreach ($data as $key => $value) {
+                if (substr($key, 0, 9) === 'metadata.') {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $isValidMetadata = function($key, $value) {
+            if (substr($key, 0, 9) !== 'metadata.' || $key === 'metadata.') {
+                return false;
+            }
+            if (!is_string($value)) {
+                return false;
+            }
+            return preg_match("/^[a-zA-Z0-9\.\-\_]*$/", $key) === 1;
+        };
+
+        $areWhereConditionsMet = function($value, $conditions) {
+            foreach ($conditions as $conditionData) {
+                if ($conditionData[0] === '==') {
+                    if ($value === $conditionData[1]) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'regexp') {
+                    if (preg_match("/" . $conditionData[1] . "/", $value) === 1) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'startsWith') {
+                    if (substr($value, 0, strlen($conditionData[1])) === $conditionData[1]) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'search') {
+                    if (strpos(strtolower($value), strtolower($conditionData[1])) !== false) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+            restore_error_handler();
+            throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
 
         // 1 - validations and caching
         // 2 - lock files
@@ -527,7 +391,7 @@ class ObjectStorage
                                     }
                                 }
                             } elseif (substr($whereItemKey, 0, 9) === 'metadata.') {
-                                if (!$this->isValidMetadata($whereItemKey, '')) {
+                                if (!$isValidMetadata($whereItemKey, '')) {
                                     throw new \InvalidArgumentException('The metadata key (' . $whereItemKey . ') in where data is not valid');
                                 }
                             }
@@ -542,7 +406,7 @@ class ObjectStorage
                 $command = $commandData['command'];
 
                 // common actions
-                if ($command === 'get' || $command === 'add' || $command === 'set' || $command === 'append' || $command === 'delete') {
+                if ($command === 'get' || $command === 'set' || $command === 'append' || $command === 'delete') {
                     if ($step === 1) {
                         if (!isset($commandData['key'])) {
                             throw new \InvalidArgumentException('key is required for "' . $command . '" command at item[' . $index . ']');
@@ -558,7 +422,7 @@ class ObjectStorage
                     foreach ($resultCodes as $resultCode) {
                         if (substr($resultCode, 0, 9) === 'metadata.') {
                             $metadataNamesResultCodes[] = substr($resultCode, 9);
-                            if (!$this->isValidMetadata($resultCode, '')) {
+                            if (!$isValidMetadata($resultCode, '')) {
                                 throw new \InvalidArgumentException('The metadata result key (' . $resultCode . ') is not valid');
                             }
                         }
@@ -570,11 +434,11 @@ class ObjectStorage
                     $cache[$index]['metadataNamesResultCodes'] = $metadataNamesResultCodes;
                 }
 
-                if ($command === 'add' || $command === 'set' || $command === 'append' || $command === 'delete') {
+                if ($command === 'set' || $command === 'append' || $command === 'delete') {
                     if ($step === 1) {
                         foreach ($commandData as $commandDataKey => $commandDataValue) {
                             if (substr($commandDataKey, 0, 9) === 'metadata.') {
-                                if (!$this->isValidMetadata($commandDataKey, $commandDataValue)) {
+                                if (!$isValidMetadata($commandDataKey, $commandDataValue)) {
                                     throw new \InvalidArgumentException('The metadata key (' . $commandDataKey . ') is not valid');
                                 }
                             }
@@ -586,7 +450,7 @@ class ObjectStorage
                         }
                     } elseif ($step === 2) {
                         $key = $commandData['key'];
-                        if (!$this->openObjectFilesForWriting($filePointers, $key, true, $command === 'delete' || $this->hasMetadataInArray($commandData))) {
+                        if (!$this->openObjectFilesForWriting($filePointers, $key, true, $command === 'delete' || $hasMetadataInArray($commandData))) {
                             $lockFailure = true;
                         }
                     } elseif ($step === 3) {
@@ -601,7 +465,7 @@ class ObjectStorage
                                 unset($filesToDelete[$this->objectsDir . $key]);
                             }
                             if (isset($commandData['body'])) {
-                                if ($command === 'add' || $command === 'set') {
+                                if ($command === 'set') {
                                     ftruncate($filePointers[$key][0], 0);
                                     fseek($filePointers[$key][0], 0);
                                 } elseif ($command === 'append') {
@@ -611,9 +475,9 @@ class ObjectStorage
                             }
                         }
                         if ($filePointers[$key][1] !== null) {
-                            $metadata = $this->getMetadataFromArray($commandData);
+                            $metadata = $getMetadataFromArray($commandData);
                             $metadataFileSize = filesize($this->metadataDir . $key);
-                            $fileMetadata = $metadataFileSize === 0 ? [] : $this->decodeMetadata(fread($filePointers[$key][1], $metadataFileSize));
+                            $fileMetadata = $metadataFileSize === 0 ? [] : $decodeMetadata(fread($filePointers[$key][1], $metadataFileSize));
                             $fileMetadata = array_merge($fileMetadata, $metadata);
                             foreach ($fileMetadata as $fileMetadataKey => $fileMetadataValue) {
                                 if ($fileMetadataValue === '') {
@@ -629,7 +493,7 @@ class ObjectStorage
                                     if (isset($filesToDelete[$this->metadataDir . $key])) {
                                         unset($filesToDelete[$this->metadataDir . $key]);
                                     }
-                                    fwrite($filePointers[$key][1], $this->encodeMetaData($fileMetadata));
+                                    fwrite($filePointers[$key][1], $encodeMetaData($fileMetadata));
                                 }
                             }
                         }
@@ -659,7 +523,7 @@ class ObjectStorage
                                 if ($objectMetadata === null) {
                                     $objectMetadata = [];
                                 } else {
-                                    $objectMetadata = $this->decodeMetadata($objectMetadata);
+                                    $objectMetadata = $decodeMetadata($objectMetadata);
                                 }
                                 if (array_search('metadata', $resultCodes) !== false) {
                                     if (is_array($objectMetadata)) {
@@ -752,25 +616,25 @@ class ObjectStorage
                                     if ($objectMetadata === null) {
                                         $objectMetadata = [];
                                     } else {
-                                        $objectMetadata = $this->decodeMetadata($objectMetadata);
+                                        $objectMetadata = $decodeMetadata($objectMetadata);
                                     }
                                 }
                             }
                             if ($hasWhere) {
                                 if (isset($cache[$index]['where']['key'])) {
-                                    if (!$this->areWhereConditionsMet($objectKey, $cache[$index]['where']['key'])) {
+                                    if (!$areWhereConditionsMet($objectKey, $cache[$index]['where']['key'])) {
                                         continue;
                                     }
                                 }
                                 if (isset($cache[$index]['where']['body'])) {
-                                    if (!$this->areWhereConditionsMet($objectBody, $cache[$index]['where']['body'])) {
+                                    if (!$areWhereConditionsMet($objectBody, $cache[$index]['where']['body'])) {
                                         continue;
                                     }
                                 }
                                 if ($hasMetadataNamesWhereCodes) {
                                     $found = false;
                                     foreach ($metadataNamesWhereCodes as $whereCode => $whereValue) {
-                                        if ($this->areWhereConditionsMet(isset($objectMetadata[$whereCode]) ? $objectMetadata[$whereCode] : '', $whereValue)) {
+                                        if ($areWhereConditionsMet(isset($objectMetadata[$whereCode]) ? $objectMetadata[$whereCode] : '', $whereValue)) {
                                             $found = true;
                                             break;
                                         }
@@ -895,7 +759,7 @@ class ObjectStorage
         unset($filePointers);
 
         if ($lockFailure) {
-            $this->removeErrorHandler();
+            restore_error_handler();
             throw new \IvoPetkov\ObjectStorage\ObjectLockedException();
         } else {
             foreach ($filesToDelete as $filename => $one) {
@@ -903,40 +767,9 @@ class ObjectStorage
                     unlink($filename);
                 }
             }
-            $this->removeErrorHandler();
+            restore_error_handler();
         }
         return $result;
-    }
-
-    /**
-     * Checks whether the where conditions are met for a specified value
-     * 
-     * @param string $value The value to check
-     * @param array $conditions List of conditions
-     * @return boolean TRUE if the conditions are met, FALSE otherwise.
-     */
-    private function areWhereConditionsMet($value, $conditions)
-    {
-        foreach ($conditions as $conditionData) {
-            if ($conditionData[0] === '==') {
-                if ($value === $conditionData[1]) {
-                    return true;
-                }
-            } elseif ($conditionData[0] === 'regexp') {
-                if (preg_match("/" . $conditionData[1] . "/", $value) === 1) {
-                    return true;
-                }
-            } elseif ($conditionData[0] === 'startsWith') {
-                if (substr($value, 0, strlen($conditionData[1])) === $conditionData[1]) {
-                    return true;
-                }
-            } elseif ($conditionData[0] === 'search') {
-                if (strpos(strtolower($value), strtolower($conditionData[1])) !== false) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -1008,59 +841,114 @@ class ObjectStorage
     }
 
     /**
-     * Creates an error handler that converts errors into exceptions
-     */
-    private function setErrorHandler()
-    {
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
-            restore_error_handler();
-            throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
-        });
-    }
-
-    /**
-     * Removes the error handler registered by setErrorHandler()
-     */
-    private function removeErrorHandler()
-    {
-        restore_error_handler();
-    }
-
-    /**
-     * Converts metadata array into string that will be saved in a file
+     * Returns file pointer for writing retrying several times. Returns false if unsuccessful.
      * 
-     * @param array $metadata The metadata array
-     * @return string The result string that will be saved in a file
-     * @throws \InvalidArgumentException
+     * @param string $filename The filename
+     * @return resource|false File pointer of false if unsuccessful
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      */
-    private function encodeMetaData($metadata)
+    private function getFilePointerForWriting($filename)
     {
-        if (!is_array($metadata)) {
-            throw new \InvalidArgumentException('The metadata argument must be an array');
+        if (is_dir($filename)) {
+            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
         }
-        return "content-type:json\n\n" . json_encode($metadata);
+        if ($this->createFileDirIfNotExists($filename) === false) {
+            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
+        }
+        $getFilePointer = function() use ($filename) {
+            $filePointer = fopen($filename, "c+");
+            if ($filePointer !== false) {
+                $flockResult = flock($filePointer, LOCK_EX | LOCK_NB);
+                if ($flockResult !== false) {
+                    return $filePointer;
+                } else {
+                    fclose($filePointer);
+                }
+            }
+            return false;
+        };
+        for ($i = 0; $i < $this->lockRetriesCount; $i++) {
+            $filePointer = $getFilePointer();
+            if ($filePointer !== false) {
+                return $filePointer;
+            }
+            if ($i < $this->lockRetriesCount - 1) {
+                usleep($this->lockRetryDelay);
+            }
+        }
+        return false;
     }
 
     /**
-     * Converts metadata from a string format to an array
+     * Opens object files (main file or metadata file) for writing
      * 
-     * @param string $metadata The metadata in string format
-     * @return array The metadata array
-     * @throws \InvalidArgumentException
+     * @param array $filePointers List of opened files pointers
+     * @param string $key The object key
+     * @param boolean $openObjectFile The main object file will be opened if TRUE
+     * @param boolean $openMetadataFile The metadata object file will be opened if TRUE
+     * @return boolean TRUE if successful, FALSE otherwise.
      */
-    private function decodeMetadata($metadata)
+    private function openObjectFilesForWriting(&$filePointers, $key, $openObjectFile, $openMetadataFile)
     {
-        if (!is_string($metadata)) {
-            throw new \InvalidArgumentException('The metadata argument must be a string');
+        $ok = true;
+        if (!isset($filePointers[$key])) {
+            $filePointers[$key] = [null, null];
         }
-        if (!isset($metadata{0})) {
-            return [];
+        if ($openObjectFile && $filePointers[$key][0] === null) {
+            $objectFilePointer = $this->getFilePointerForWriting($this->objectsDir . $key);
+            if ($objectFilePointer === false) {
+                $ok = false;
+            } else {
+                $filePointers[$key][0] = $objectFilePointer;
+            }
         }
-        $parts = explode("\n\n", $metadata, 2);
-        if (!isset($parts[1])) {
-            return [];
+
+        if ($openMetadataFile && $filePointers[$key][1] === null) {
+            $metadataFilePointer = $this->getFilePointerForWriting($this->metadataDir . $key);
+            if ($metadataFilePointer === false) {
+                $ok = false;
+            } else {
+                $filePointers[$key][1] = $metadataFilePointer;
+            }
         }
-        return json_decode($parts[1], true);
+        return $ok;
+    }
+
+    /**
+     * Reads and returns a object file content
+     * 
+     * @param array $filePointers List of already opened files. If the key requested is not in that list it will be opened.
+     * @param string $key The object key
+     * @param int The type of object file to read. 0 - The main object file, 1 - The metadata file
+     * @return string|null The object file content or null if not existent
+     */
+    private function getFileContent($filePointers, $key, $fileType)
+    {
+
+        if (isset($filePointers[$key], $filePointers[$key][$fileType]) && $filePointers[$key][$fileType] !== null) {
+            $pointerPosition = ftell($filePointers[$key][$fileType]);
+            fseek($filePointers[$key][$fileType], 0);
+            $contents = '';
+            while (!feof($filePointers[$key][$fileType])) {
+                $contents .= fread($filePointers[$key][$fileType], 8192);
+            }
+            fseek($filePointers[$key][$fileType], $pointerPosition);
+            return $contents;
+        } else {
+            $filename = ($fileType === 0 ? $this->objectsDir : $this->metadataDir) . $key;
+            if (is_file($filename)) {
+                if (filesize($filename) === 0) {
+                    return '';
+                } else {
+                    $filePointer = fopen($filename, "r");
+                    flock($filePointer, LOCK_SH);
+                    $content = fread($filePointer, filesize($filename));
+                    fclose($filePointer);
+                    return $content;
+                }
+            }
+            return null;
+        }
     }
 
 }
