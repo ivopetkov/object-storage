@@ -1036,7 +1036,7 @@ class ObjectStorage
     private function encodeMetaData($metadata)
     {
         if (!is_array($metadata)) {
-            throw new \InvalidArgumentException('');
+            throw new \InvalidArgumentException('The metadata argument must be an array');
         }
         return "content-type:json\n\n" . json_encode($metadata);
     }
@@ -1051,7 +1051,7 @@ class ObjectStorage
     private function decodeMetadata($metadata)
     {
         if (!is_string($metadata)) {
-            throw new \InvalidArgumentException('');
+            throw new \InvalidArgumentException('The metadata argument must be a string');
         }
         if (!isset($metadata{0})) {
             return [];
