@@ -1,9 +1,19 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+/*
+ * Object Storage
+ * https://github.com/ivopetkov/object-storage
+ * Copyright (c) 2016 Ivo Petkov
+ * Free to use under the MIT license.
+ */
 
 class ObjectStorageTestCase extends PHPUnit_Framework_TestCase
 {
+
+    function setUp()
+    {
+        require __DIR__ . '/../vendor/autoload.php';
+    }
 
     private $lockedFiles = [];
 
@@ -98,6 +108,16 @@ class ObjectStorageTestCase extends PHPUnit_Framework_TestCase
         $index = sizeof($this->lockedFiles);
         $this->lockedFiles[$index] = fopen($filename, "c+");
         flock($this->lockedFiles[$index], LOCK_EX | LOCK_NB);
+    }
+
+}
+
+class ObjectStorageAutoloaderTestCase extends PHPUnit_Framework_TestCase
+{
+
+    function setUp()
+    {
+        require __DIR__ . '/../autoload.php';
     }
 
 }
