@@ -98,6 +98,17 @@ class ObjectStorageTestCase extends PHPUnit_Framework_TestCase
         return $result;
     }
 
+    function createFile($filename, $content)
+    {
+        $pathinfo = pathinfo($filename);
+        if (isset($pathinfo['dirname']) && $pathinfo['dirname'] !== '.') {
+            if (!is_dir($pathinfo['dirname'])) {
+                mkdir($pathinfo['dirname'], 0777, true);
+            }
+        }
+        file_put_contents($filename, $content);
+    }
+
     public function lockFile($key)
     {
         $dir = $this->getDataDir() . 'objects';

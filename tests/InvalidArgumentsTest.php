@@ -27,6 +27,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey1()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -42,6 +43,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey2()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -57,6 +59,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey3()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -72,6 +75,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey4()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -87,6 +91,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey5()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -102,6 +107,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey6()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -117,6 +123,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey7()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -132,6 +139,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey8()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -147,6 +155,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey9()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -162,6 +171,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey10()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -177,6 +187,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey11()
     {
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -192,7 +203,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey12()
     {
-
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -208,7 +219,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidKey13()
     {
-
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -224,7 +235,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidMetadata1()
     {
-
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -240,7 +251,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidMetadata2()
     {
-
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(
@@ -256,7 +267,7 @@ class InvalidArgumentsTest extends ObjectStorageTestCase
      */
     public function testInvalidMetadata3()
     {
-
+        $this->removeDataDir();
         $objectStorage = $this->getInstance();
         $this->setExpectedException('InvalidArgumentException');
         $objectStorage->set(

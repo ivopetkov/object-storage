@@ -218,8 +218,8 @@ class ObjectStorage
      *        'body' => 'body2'
      *    ]
      * @return array Array containing the results for the commands
-     * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \InvalidArgumentException
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function execute($commands)
