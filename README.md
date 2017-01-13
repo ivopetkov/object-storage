@@ -117,7 +117,7 @@ _Parameters_
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$parameters`
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']. Specifying metadata.* will bulk remove/update all previous metadata.
 
 _Returns_
 

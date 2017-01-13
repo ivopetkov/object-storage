@@ -84,7 +84,7 @@ class ObjectStorage
     /**
      * Saves object data for a specified key
      * 
-     * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']. Specifying metadata.* will bulk remove/update all previous metadata.
      * @return void No value is returned
      */
     public function set($parameters)
