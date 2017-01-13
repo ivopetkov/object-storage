@@ -99,22 +99,21 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     'result' => ['key', 'body', 'metadata.title', 'metadata.year']
                 ]
         );
-        $this->assertTrue($result ===
-                array(
-                    0 =>
-                    array(
-                        'key' => 'book-1449392776',
-                        'body' => 'book 1449392776 content in pdf format',
-                        'metadata.title' => 'Programming PHP',
-                        'metadata.year' => '2013',
-                    ),
-                    1 =>
-                    array(
-                        'key' => 'book-1430268158',
-                        'body' => 'book 1430268158 content in pdf format',
-                        'metadata.title' => 'PHP for Absolute Beginners',
-                        'metadata.year' => '2014',
-                    ),
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'book-1449392776',
+                'body' => 'book 1449392776 content in pdf format',
+                'metadata.title' => 'Programming PHP',
+                'metadata.year' => '2013',
+            ),
+            1 =>
+            array(
+                'key' => 'book-1430268158',
+                'body' => 'book 1430268158 content in pdf format',
+                'metadata.title' => 'PHP for Absolute Beginners',
+                'metadata.year' => '2014',
+            ),
         ));
         $this->assertTrue($this->checkState(
                         'ed20ab8c4a519ca9fc10608331cd8bc1
@@ -178,9 +177,8 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     'result' => ['metadata.rating']
                 ]
         );
-        $this->assertTrue($result ===
-                array(
-                    'metadata.rating' => '3.4',
+        $this->assertTrue($result === array(
+            'metadata.rating' => '3.4',
         ));
         $this->assertTrue($this->checkState(
                         '534393dff9b252fcc411e1c2b8e501ed
@@ -347,20 +345,19 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     'result' => ['key', 'metadata.title', 'metadata.authors']
                 ]
         );
-        $this->assertTrue($result ===
-                array(
-                    0 =>
-                    array(
-                        'key' => 'book-1430260319',
-                        'metadata.title' => 'PHP Objects, Patterns, and Practice',
-                        'metadata.authors' => '["Matt Zandstra"]',
-                    ),
-                    1 =>
-                    array(
-                        'key' => 'book-1449392776',
-                        'metadata.title' => 'Programming PHP',
-                        'metadata.authors' => '["Kevin Tatroe", "Peter MacIntyre", "Rasmus Lerdorf"]',
-                    ),
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'book-1430260319',
+                'metadata.title' => 'PHP Objects, Patterns, and Practice',
+                'metadata.authors' => '["Matt Zandstra"]',
+            ),
+            1 =>
+            array(
+                'key' => 'book-1449392776',
+                'metadata.title' => 'Programming PHP',
+                'metadata.authors' => '["Kevin Tatroe", "Peter MacIntyre", "Rasmus Lerdorf"]',
+            ),
         ));
         $this->assertTrue($this->checkState('65c9e2014d2e54752d99a49f56c3fe1e
 metadata/book-1000000000-comments: content-type:json
@@ -888,7 +885,64 @@ objects/emptydata:
         );
         $this->assertTrue($result === array());
 
-        //echo "\n\n" . var_export($result) . "\n\n" . getState() . "\n\n";
+        //echo (isset($result) ? "\n\n" . var_export($result) : '') . "\n\n" . $this->getState() . "\n\n";exit;
+
+        $this->removeDataDir();
+    }
+
+    /**
+     * 
+     */
+    public function testRemoveOldMetadata()
+    {
+        $this->removeDataDir();
+        $objectStorage = $this->getInstance();
+
+        $objectStorage->set(
+                [
+                    'key' => 'data1',
+                    'body' => 'body1',
+                    'metadata.var1' => '1',
+                    'metadata.var2' => '2'
+                ]
+        );
+        $this->assertTrue($this->checkState('dcc62823d8b65f6f72741098df815fb0
+metadata/data1: content-type:json
+
+{"var1":"1","var2":"2"}
+objects/data1: body1'));
+
+        $objectStorage->set(
+                [
+                    'key' => 'data1',
+                    'body' => 'body1',
+                    'metadata.*' => 'old',
+                    'metadata.var2' => '2+',
+                    'metadata.var3' => '3'
+                ]
+        );
+        $this->assertTrue($this->checkState('d160e9e3ab4c03852ae7adfe2f3dc3ae
+metadata/data1: content-type:json
+
+{"var1":"old","var2":"2+","var3":"3"}
+objects/data1: body1'));
+
+        $objectStorage->set(
+                [
+                    'key' => 'data1',
+                    'body' => 'body1',
+                    'metadata.*' => '',
+                    'metadata.var3' => '3+'
+                ]
+        );
+        $this->assertTrue($this->checkState('276612436ecf6bd4c3675fb1f3593e44
+metadata/data1: content-type:json
+
+{"var3":"3+"}
+objects/data1: body1'));
+
+//        echo (isset($result) ? "\n\n" . var_export($result) : '') . "\n\n" . $this->getState() . "\n\n";
+//        exit;
 
         $this->removeDataDir();
     }

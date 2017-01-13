@@ -267,7 +267,10 @@ class ObjectStorage
             return false;
         };
 
-        $isValidMetadata = function($key, $value) {
+        $isValidMetadata = function($key, $value, $allowWildcard) {
+            if ($allowWildcard && $key === 'metadata.*') {
+                return true;
+            }
             if (substr($key, 0, 9) !== 'metadata.' || $key === 'metadata.') {
                 return false;
             }
@@ -394,7 +397,7 @@ class ObjectStorage
                                     }
                                 }
                             } elseif (substr($whereItemKey, 0, 9) === 'metadata.') {
-                                if (!$isValidMetadata($whereItemKey, '')) {
+                                if (!$isValidMetadata($whereItemKey, '', false)) {
                                     throw new \InvalidArgumentException('The metadata key (' . $whereItemKey . ') in where data is not valid');
                                 }
                             }
@@ -425,7 +428,7 @@ class ObjectStorage
                     foreach ($resultCodes as $resultCode) {
                         if (substr($resultCode, 0, 9) === 'metadata.') {
                             $metadataNamesResultCodes[] = substr($resultCode, 9);
-                            if (!$isValidMetadata($resultCode, '')) {
+                            if (!$isValidMetadata($resultCode, '', false)) {
                                 throw new \InvalidArgumentException('The metadata result key (' . $resultCode . ') is not valid');
                             }
                         }
@@ -441,7 +444,7 @@ class ObjectStorage
                     if ($step === 1) {
                         foreach ($commandData as $commandDataKey => $commandDataValue) {
                             if (substr($commandDataKey, 0, 9) === 'metadata.') {
-                                if (!$isValidMetadata($commandDataKey, $commandDataValue)) {
+                                if (!$isValidMetadata($commandDataKey, $commandDataValue, true)) {
                                     throw new \InvalidArgumentException('The metadata key (' . $commandDataKey . ') is not valid');
                                 }
                             }
@@ -477,10 +480,16 @@ class ObjectStorage
                                 fwrite($filePointers[$key][0], $commandData['body']);
                             }
                         }
-                        if ($filePointers[$key][1] !== null) {
+                        if ($command === 'set' && $filePointers[$key][1] !== null) {
                             $metadata = $getMetadataFromArray($commandData);
                             $metadataFileSize = filesize($this->metadataDir . $key);
                             $fileMetadata = $metadataFileSize === 0 ? [] : $decodeMetadata(fread($filePointers[$key][1], $metadataFileSize));
+                            if (isset($metadata['*'])) {
+                                foreach ($fileMetadata as $fileMetadataKey => $fileMetadataValue) {
+                                    $fileMetadata[$fileMetadataKey] = $metadata['*'];
+                                }
+                                unset($metadata['*']);
+                            }
                             $fileMetadata = array_merge($fileMetadata, $metadata);
                             foreach ($fileMetadata as $fileMetadataKey => $fileMetadataValue) {
                                 if ($fileMetadataValue === '') {
