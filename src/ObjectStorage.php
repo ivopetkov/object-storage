@@ -286,12 +286,36 @@ class ObjectStorage
                     if ($value === $conditionData[1]) {
                         return true;
                     }
-                } elseif ($conditionData[0] === 'regexp') {
-                    if (preg_match("/" . $conditionData[1] . "/", $value) === 1) {
+                } elseif ($conditionData[0] === 'equal') {
+                    if ($value === $conditionData[1]) {
                         return true;
                     }
-                } elseif ($conditionData[0] === 'startsWith') {
+                } elseif ($conditionData[0] === 'notEqual') {
+                    if ($value !== $conditionData[1]) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'regexp' || $conditionData[0] === 'regExp') {
+                    if (preg_match('/' . $conditionData[1] . '/', $value) === 1) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'notRegExp') {
+                    if (preg_match('/' . $conditionData[1] . '/', $value) === 0) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'startsWith' || $conditionData[0] === 'startWith') {
                     if (substr($value, 0, strlen($conditionData[1])) === $conditionData[1]) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'notStartWith') {
+                    if (substr($value, 0, strlen($conditionData[1])) !== $conditionData[1]) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'endWith') {
+                    if (substr($value, -strlen($conditionData[1])) === $conditionData[1]) {
+                        return true;
+                    }
+                } elseif ($conditionData[0] === 'notEndWith') {
+                    if (substr($value, -strlen($conditionData[1])) !== $conditionData[1]) {
                         return true;
                     }
                 } elseif ($conditionData[0] === 'search') {
@@ -360,7 +384,7 @@ class ObjectStorage
                                     $whereData[$whereDataItem[0]] = [];
                                 }
                                 $whereOperator = isset($whereDataItem[2]) ? $whereDataItem[2] : '==';
-                                if ($whereOperator !== '==' && $whereOperator !== 'regexp' && $whereOperator !== 'search' && $whereOperator !== 'startsWith') {
+                                if (array_search($whereOperator, ['==', 'regexp', 'search', 'startsWith', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
                                     throw new \InvalidArgumentException('invalid where operator - ' . $whereOperator);
                                 }
                                 if (is_string($whereDataItem[1])) {

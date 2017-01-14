@@ -947,4 +947,187 @@ objects/data1: body1'));
         $this->removeDataDir();
     }
 
+    /**
+     * 
+     */
+    public function testWhereOperators()
+    {
+        $this->removeDataDir();
+        $objectStorage = $this->getInstance();
+
+        $objectStorage->set(
+                [
+                    'key' => 'data1',
+                    'body' => ''
+                ]
+        );
+        $objectStorage->set(
+                [
+                    'key' => 'data2',
+                    'body' => ''
+                ]
+        );
+        $objectStorage->set(
+                [
+                    'key' => 'data3',
+                    'body' => ''
+                ]
+        );
+
+        // Test equal
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', 'data1', 'equal']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            )
+        ));
+
+        // Test notEqual
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', 'data1', 'notEqual']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data2'
+            ),
+            1 =>
+            array(
+                'key' => 'data3'
+            )
+        ));
+
+        // Test startWith
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', 'data', 'startWith']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            ),
+            1 =>
+            array(
+                'key' => 'data2'
+            ),
+            2 =>
+            array(
+                'key' => 'data3'
+            )
+        ));
+
+        // Test notStartWith
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', 'data2', 'notStartWith']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            ),
+            1 =>
+            array(
+                'key' => 'data3'
+            )
+        ));
+
+
+        // Test endWith
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', '2', 'endWith']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data2'
+            )
+        ));
+
+        // Test notEndWith
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', '2', 'notEndWith']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            ),
+            1 =>
+            array(
+                'key' => 'data3'
+            )
+        ));
+
+        // Test regExp
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', '1', 'regExp']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            )
+        ));
+
+        // Test notRegExp
+        $result = $objectStorage->search(
+                [
+                    'where' => [
+                        ['key', '1', 'notRegExp']
+                    ],
+                    'result' => ['key']
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data2'
+            ),
+            1 =>
+            array(
+                'key' => 'data3'
+            )
+        ));
+
+        $this->removeDataDir();
+    }
+
 }
