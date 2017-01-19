@@ -587,9 +587,9 @@ class ObjectStorage
                             $keysData = $cache[$index]['where']['key'];
                             $keysDone = true;
                             foreach ($keysData as $keyData) {
-                                if ($keyData[0] === '==') {
+                                if ($keyData[0] === '==' || $keyData[0] === 'equal') {
                                     $objectsKeys[] = $keyData[1];
-                                } elseif ($keyData[0] === 'startsWith') {
+                                } elseif ($keyData[0] === 'startsWith' || $keyData[0] === 'startWith') {
                                     $position = strrpos($keyData[1], '/');
                                     if ($position !== false) {
                                         $dir = substr($keyData[1], 0, $position);
