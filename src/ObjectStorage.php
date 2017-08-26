@@ -229,6 +229,7 @@ class ObjectStorage
     {
         $result = [];
         $lockFailure = false;
+        $lockFailureReason = '';
         $filePointers = [];
         $filesToDelete = [];
         $cache = [];
@@ -482,6 +483,7 @@ class ObjectStorage
                         $key = $commandData['key'];
                         if (!$this->openObjectFilesForWriting($filePointers, $key, true, $command === 'delete' || $hasMetadataInArray($commandData))) {
                             $lockFailure = true;
+                            $lockFailureReason = 'The key (' . $key . ') is locked (' . $command . ')';
                         }
                     } elseif ($step === 3) {
                         $key = $commandData['key'];
@@ -719,19 +721,22 @@ class ObjectStorage
                             throw new \InvalidArgumentException('targetKey is not valid');
                         }
                         if (!is_file($this->objectsDir . $commandData['sourceKey'])) {
-                            throw new \InvalidArgumentException('sourceKey object not found in "' . $command . '" command at item[' . $index . ']');
+                            throw new \InvalidArgumentException('sourceKey object not found in "' . $command . '" command at item[' . $index . '] (' . $commandData['sourceKey'] . ')');
                         }
                     } elseif ($step === 2) {
                         if ($command === 'duplicate') {
                             if (!$this->openObjectFilesForWriting($filePointers, $commandData['targetKey'], true, true)) {
                                 $lockFailure = true;
+                                $lockFailureReason = 'The targetKey (' . $commandData['targetKey'] . ') is locked (duplicate)';
                             }
                         } elseif ($command === 'rename') {
                             if (!$this->openObjectFilesForWriting($filePointers, $commandData['sourceKey'], true, true)) {
                                 $lockFailure = true;
+                                $lockFailureReason = 'The sourceKey (' . $commandData['sourceKey'] . ') is locked (rename)';
                             }
                             if (!$this->openObjectFilesForWriting($filePointers, $commandData['targetKey'], true, true)) {
                                 $lockFailure = true;
+                                $lockFailureReason = 'The targetKey (' . $commandData['targetKey'] . ') is locked (rename)';
                             }
                         }
                     } elseif ($step === 3) {
@@ -796,7 +801,7 @@ class ObjectStorage
 
         if ($lockFailure) {
             restore_error_handler();
-            throw new \IvoPetkov\ObjectStorage\ObjectLockedException();
+            throw new \IvoPetkov\ObjectStorage\ObjectLockedException($lockFailureReason);
         } else {
             foreach ($filesToDelete as $filename => $one) {
                 if (is_file($filename)) {
