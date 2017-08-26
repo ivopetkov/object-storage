@@ -508,8 +508,13 @@ class ObjectStorage
                         }
                         if ($command === 'set' && $filePointers[$key][1] !== null) {
                             $metadata = $getMetadataFromArray($commandData);
-                            $metadataFileSize = filesize($this->metadataDir . $key);
-                            $fileMetadata = $metadataFileSize === 0 ? [] : $decodeMetadata(fread($filePointers[$key][1], $metadataFileSize));
+                            $fileMetadata = [];
+                            if (is_file($this->metadataDir . $key)) {
+                                $metadataFileSize = filesize($this->metadataDir . $key);
+                                if ($metadataFileSize > 0) {
+                                    $fileMetadata = $decodeMetadata(fread($filePointers[$key][1], $metadataFileSize));
+                                }
+                            }
                             if (isset($metadata['*'])) {
                                 foreach ($fileMetadata as $fileMetadataKey => $fileMetadataValue) {
                                     $fileMetadata[$fileMetadataKey] = $metadata['*'];
