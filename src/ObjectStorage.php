@@ -833,7 +833,7 @@ class ObjectStorage
             } elseif (is_file($pathinfo['dirname'])) {
                 return false;
             } else {
-                return mkdir($pathinfo['dirname'], 0777, true);
+                return $this->createDirIfNotExists($pathinfo['dirname']);
             }
         }
         return false;
@@ -847,8 +847,21 @@ class ObjectStorage
     private function createDirIfNotExists($dir)
     {
         if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
+            try {
+                set_error_handler(function($errno, $errstr, $errfile, $errline) {
+                    restore_error_handler();
+                    throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
+                });
+                $result = mkdir($dir, 0777, true);
+                restore_error_handler();
+                return $result;
+            } catch (\IvoPetkov\ObjectStorage\ErrorException $e) {
+                if ($e->getMessage() !== 'mkdir(): File exists') { // The directory may be just created in other process.
+                    throw $e;
+                }
+            }
         }
+        return true;
     }
 
     /**
