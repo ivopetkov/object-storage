@@ -31,4 +31,21 @@ class ExceptionsTest extends ObjectStorageTestCase
         );
     }
 
+    /**
+     * 
+     */
+    public function testExceptions2()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $this->setExpectedException('\IvoPetkov\ObjectStorage\ErrorException');
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage->rename(
+                [
+                    'sourceKey' => 'key1',
+                    'targetKey' => 'key2'
+                ]
+        );
+    }
+
 }

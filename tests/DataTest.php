@@ -837,9 +837,6 @@ objects/prefix2/datac: C
         );
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
-
-
-        $this->removeDataDir();
     }
 
     /**
@@ -884,10 +881,45 @@ objects/emptydata:
                 ]
         );
         $this->assertTrue($result === array());
+    }
 
-        //echo (isset($result) ? "\n\n" . var_export($result) : '') . "\n\n" . $this->getState() . "\n\n";exit;
-
+    /**
+     * 
+     */
+    public function testBreakMetadata()
+    {
         $this->removeDataDir();
+        $objectStorage = $this->getInstance();
+
+        $objectStorage->set(
+                [
+                    'key' => 'key1',
+                    'body' => 'body1',
+                    'metadata.key1' => 'value1'
+                ]
+        );
+        $this->assertTrue($this->checkState('429d57556edd45e292527bbf97befb3e
+metadata/key1: content-type:json
+
+{"key1":"value1"}
+objects/key1: body1
+'));
+
+        $this->createFile($this->getDataDir() . 'metadata/key1', 'broken');
+        $this->assertTrue($this->checkState('844b03e029bc1000f7c198a2a43647b3
+metadata/key1: broken
+objects/key1: body1
+'));
+
+        $result = $objectStorage->get(
+                [
+                    'key' => 'key1',
+                    'result' => ['body', 'metadata']
+                ]
+        );
+        $this->assertTrue($result === array(
+            'body' => 'body1',
+        ));
     }
 
     /**
@@ -943,8 +975,6 @@ objects/data1: body1'));
 
 //        echo (isset($result) ? "\n\n" . var_export($result) : '') . "\n\n" . $this->getState() . "\n\n";
 //        exit;
-
-        $this->removeDataDir();
     }
 
     /**
@@ -1126,8 +1156,358 @@ objects/data1: body1'));
                 'key' => 'data3'
             )
         ));
+    }
+
+    /**
+     * 
+     */
+    public function testDeleteAfterSet()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'delete',
+                        'key' => 'product-1'
+                    ],
+                    [
+                        'command' => 'get',
+                        'key' => 'product-1',
+                        'result' => ['key', 'body']
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 =>
+            array(
+            )
+        ));
+
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
+'));
+    }
+
+    /**
+     * 
+     */
+    public function testAppendAfterDelete()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'delete',
+                        'key' => 'product-1'
+                    ],
+                    [
+                        'command' => 'append',
+                        'key' => 'product-1',
+                        'body' => 'product body 2'
+                    ],
+                    [
+                        'command' => 'get',
+                        'key' => 'product-1',
+                        'result' => ['key', 'body']
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 => true,
+            3 =>
+            array(
+                'key' => 'product-1',
+                'body' => 'product body 2',
+            ),
+        ));
+
+        $this->assertTrue($this->checkState('89dadbb5027a7c8479fd981c0861b6a8
+objects/product-1: product body 2
+'));
+    }
+
+    /**
+     * 
+     */
+    public function testRenameAfterDelete()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'delete',
+                        'key' => 'product-1'
+                    ],
+                    [
+                        'command' => 'rename',
+                        'sourceKey' => 'product-1',
+                        'targetKey' => 'product-2',
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 => false
+        ));
+
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
+'));
+    }
+
+    /**
+     * 
+     */
+    public function testDuplicateAfterDelete()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'delete',
+                        'key' => 'product-1'
+                    ],
+                    [
+                        'command' => 'duplicate',
+                        'sourceKey' => 'product-1',
+                        'targetKey' => 'product-2',
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 => false
+        ));
+
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
+'));
+    }
+
+    /**
+     * 
+     */
+    public function testRename()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1a',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'product-2a',
+                        'body' => 'product body 2',
+                        'metadata.key' => 'value'
+                    ],
+                    [
+                        'command' => 'rename',
+                        'sourceKey' => 'product-1a',
+                        'targetKey' => 'product-1b',
+                    ],
+                    [
+                        'command' => 'rename',
+                        'sourceKey' => 'product-2a',
+                        'targetKey' => 'product-2b',
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 => true,
+            3 => true,
+        ));
+
+        $this->assertTrue($this->checkState('dd8b80a39b4400501586f368aa8299de
+metadata/product-2b: content-type:json
+
+{"key":"value"}
+objects/product-1b: product body 1
+objects/product-2b: product body 2'));
+    }
+
+    /**
+     * 
+     */
+    public function testDuplicate()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1a',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'product-2a',
+                        'body' => 'product body 2',
+                        'metadata.key' => 'value'
+                    ],
+                    [
+                        'command' => 'duplicate',
+                        'sourceKey' => 'product-1a',
+                        'targetKey' => 'product-1b',
+                    ],
+                    [
+                        'command' => 'duplicate',
+                        'sourceKey' => 'product-2a',
+                        'targetKey' => 'product-2b',
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 => true,
+            3 => true,
+        ));
+
+        $this->assertTrue($this->checkState('5e08ed302b17012d025d13faa4767a5d
+metadata/product-2a: content-type:json
+
+{"key":"value"}
+metadata/product-2b: content-type:json
+
+{"key":"value"}
+objects/product-1a: product body 1
+objects/product-1b: product body 1
+objects/product-2a: product body 2
+objects/product-2b: product body 2'));
+    }
+
+    /**
+     * 
+     */
+    public function testSearchBody()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1a',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'product-2a',
+                        'body' => 'product body 2',
+                        'metadata.key' => 'value'
+                    ],
+                    [
+                        'command' => 'search',
+                        'where' => [
+                            ['body', 'body 2', 'search']
+                        ],
+                        'result' => ['key', 'body']
+                    ]
+                ]
+        );
+        $this->assertTrue($result === array(
+            0 => true,
+            1 => true,
+            2 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'product-2a',
+                    'body' => 'product body 2',
+                ),
+            ),
+        ));
+
+        $this->assertTrue($this->checkState('a7091f03e727d073600c5f48b47d0399
+metadata/product-2a: content-type:json
+
+{"key":"value"}
+objects/product-1a: product body 1
+objects/product-2a: product body 2'));
+    }
+
+    /**
+     * 
+     */
+    public function testClearMetadata()
+    {
+        $this->removeDataDir();
+        $dataDir = $this->getDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1',
+                        'metadata.key1' => 'value1'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'metadata.*' => ''
+                    ],
+                ]
+        );
+        $this->assertTrue($this->checkState('f66d138ab8ae4cc8fc6a34e9fa59b19f
+objects/product-1: product body 1
+'));
 
         $this->removeDataDir();
+        $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1',
+                        'metadata.*' => ''
+                    ],
+                ]
+        );
+        $this->assertTrue($this->checkState('f66d138ab8ae4cc8fc6a34e9fa59b19f
+objects/product-1: product body 1
+'));
     }
 
 }

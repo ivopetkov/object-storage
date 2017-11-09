@@ -15,7 +15,7 @@ class ObjectStorage
     /**
      * The current library version
      */
-    const VERSION = '0.2.1';
+    const VERSION = '0.2.2';
 
     /**
      * The directory where the objects will be stored
@@ -207,7 +207,7 @@ class ObjectStorage
     }
 
     /**
-     * Executes list of commmands
+     * Executes list of commands
      * 
      * @param array $commands Array containing list of commands in the following format:
      *    [
@@ -227,12 +227,9 @@ class ObjectStorage
      */
     public function execute($commands)
     {
-        $result = [];
-        $lockFailure = false;
-        $lockFailureReason = '';
         $filePointers = [];
         $filesToDelete = [];
-        $cache = [];
+        $emptyOpenedFiles = []; // opened but no content set
 
         $encodeMetaData = function($metadata) {
             return "content-type:json\n\n" . json_encode($metadata);
@@ -243,29 +240,11 @@ class ObjectStorage
                 return [];
             }
             $parts = explode("\n\n", $metadata, 2);
-            if (!isset($parts[1])) {
+            if (!isset($parts[1]) || $parts[0] !== 'content-type:json') {
                 return [];
             }
-            return json_decode($parts[1], true);
-        };
-
-        $getMetadataFromArray = function($data) {
-            $result = [];
-            foreach ($data as $key => $value) {
-                if (substr($key, 0, 9) === 'metadata.') {
-                    $result[substr($key, 9)] = $value;
-                }
-            }
-            return $result;
-        };
-
-        $hasMetadataInArray = function($data) {
-            foreach ($data as $key => $value) {
-                if (substr($key, 0, 9) === 'metadata.') {
-                    return true;
-                }
-            }
-            return false;
+            $result = json_decode($parts[1], true);
+            return is_array($result) ? $result : [];
         };
 
         $isValidMetadata = function($key, $value, $allowWildcard) {
@@ -328,494 +307,649 @@ class ObjectStorage
             return false;
         };
 
+        $prepareFileForWriting = function($filename) use (&$filePointers, &$emptyOpenedFiles) {
+            if (isset($filePointers[$filename])) {
+                return;
+            }
+            if (is_dir($filename)) {
+                throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable.');
+            }
+            if ($this->createFileDirIfNotExists($filename) === false) {
+                throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable.');
+            }
+            $getFilePointer = function() use ($filename, &$emptyOpenedFiles) {
+                clearstatcache(false, $filename);
+                $isNew = !is_file($filename);
+                $filePointer = fopen($filename, "c+");
+                if ($filePointer !== false) {
+                    $flockResult = flock($filePointer, LOCK_EX | LOCK_NB);
+                    if ($flockResult !== false) {
+                        if ($isNew) {
+                            $emptyOpenedFiles[$filename] = 1;
+                        }
+                        return $filePointer;
+                    } else {
+                        fclose($filePointer);
+                    }
+                }
+                return false;
+            };
+            $done = false;
+            for ($i = 0; $i < $this->lockRetriesCount; $i++) {
+                $filePointer = $getFilePointer();
+                if ($filePointer !== false) {
+                    $filePointers[$filename] = $filePointer;
+                    $done = true;
+                    break;
+                }
+                if ($i < $this->lockRetriesCount - 1) {
+                    usleep($this->lockRetryDelay);
+                }
+            }
+            if (!$done) {
+                throw new \IvoPetkov\ObjectStorage\ObjectLockedException('The file ' . $filename . ' is locked and cannot be open for writing.');
+            }
+        };
+
+        $prepareFileForReading = function($filename, $required = false) use (&$filePointers) {
+            if (isset($filePointers[$filename])) {
+                return true;
+            }
+            if (is_file($filename)) {
+                if (!is_readable($filename)) {
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not readable.');
+                }
+            } else {
+                if ($required) {
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' does not exist.');
+                }
+                $rootDir = dirname($filename, 100);
+                $isParentDirReadable = false;
+                for ($i = 1; $i < 100; $i++) {
+                    $dirToCheck = dirname($filename, $i);
+                    if (is_dir($dirToCheck) && is_readable($dirToCheck)) {
+                        $isParentDirReadable = true;
+                        break;
+                    }
+                    if ($dirToCheck === $rootDir) {
+                        break;
+                    }
+                }
+                if (!$isParentDirReadable) {
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not readable.');
+                }
+            }
+        };
+
+        $setFileContent = function($filename, $content) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+            if (isset($filePointers[$filename])) {
+                if (isset($filesToDelete[$filename])) {
+                    unset($filesToDelete[$filename]);
+                }
+                $filePointer = $filePointers[$filename];
+                ftruncate($filePointer, 0);
+                fseek($filePointer, 0);
+                fwrite($filePointer, $content);
+                if (isset($emptyOpenedFiles[$filename])) {
+                    unset($emptyOpenedFiles[$filename]);
+                }
+            } else {
+                throw new \Exception('Internal error! File ' . $filename . ' is not opened for writing! Should not get here!');
+            }
+        };
+
+        $appendFileContent = function($filename, $content) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+            if (isset($filePointers[$filename])) {
+                $filePointer = $filePointers[$filename];
+                if (isset($filesToDelete[$filename])) {
+                    unset($filesToDelete[$filename]);
+                    ftruncate($filePointer, 0);
+                    fseek($filePointer, 0);
+                }
+                fseek($filePointer, 0, SEEK_END);
+                fwrite($filePointer, $content);
+                if (isset($emptyOpenedFiles[$filename])) {
+                    unset($emptyOpenedFiles[$filename]);
+                }
+            } else {
+                throw new \IvoPetkov\ObjectStorage\ErrorException('File ' . $filename . ' is not opened for writing!');
+            }
+        };
+
+        $getFileContent = function($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+            if (isset($filesToDelete[$filename])) {
+                return null;
+            }
+            if (isset($emptyOpenedFiles[$filename])) {
+                return null;
+            }
+            if (isset($filePointers[$filename])) {
+                $filePointer = $filePointers[$filename];
+                $pointerPosition = ftell($filePointer);
+                fseek($filePointer, 0);
+                $content = '';
+                while (!feof($filePointer)) {
+                    $content .= fread($filePointer, 8192);
+                }
+                fseek($filePointer, $pointerPosition);
+                return $content;
+            } else {
+                if (is_file($filename)) {
+                    if (filesize($filename) === 0) {
+                        return '';
+                    } else {
+                        $filePointer = fopen($filename, "r");
+                        flock($filePointer, LOCK_SH);
+                        $content = fread($filePointer, filesize($filename));
+                        fclose($filePointer);
+                        return $content;
+                    }
+                }
+                return null;
+            }
+        };
+
+        $deleteFile = function($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+            if (isset($filePointers[$filename])) {
+                $filePointer = $filePointers[$filename];
+                ftruncate($filePointer, 0);
+                fseek($filePointer, 0);
+            }
+            $filesToDelete[$filename] = 1;
+            if (isset($emptyOpenedFiles[$filename])) {
+                unset($emptyOpenedFiles[$filename]);
+            }
+        };
+
         set_error_handler(function($errno, $errstr, $errfile, $errline) {
             restore_error_handler();
             throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
         });
 
-        // 1 - validations and caching
-        // 2 - lock files
-        // 3 - do job
-        for ($step = 1; $step <= 3; $step++) {
-            if ($step === 1) {
-                $this->createDirIfNotExists($this->objectsDir);
-                if (!is_writable($this->objectsDir)) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The objectsDir specified (' . $this->objectsDir . ') is not writable');
-                }
-                if (!is_readable($this->objectsDir)) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The objectsDir specified (' . $this->objectsDir . ') is not readable');
-                }
-                $this->createDirIfNotExists($this->metadataDir);
-                if (!is_writable($this->metadataDir)) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The metadataDir specified (' . $this->metadataDir . ') is not writable');
-                }
-                if (!is_readable($this->metadataDir)) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The metadataDir specified (' . $this->metadataDir . ') is not readable');
-                }
-                $this->createDirIfNotExists($this->tempDir);
-                if (!is_writable($this->tempDir)) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The tempDir specified (' . $this->tempDir . ') is not writable');
-                }
-                if (!is_readable($this->tempDir)) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The tempDir specified (' . $this->tempDir . ') is not readable');
-                }
-            }
+        $functions = [];
+        $thrownException = null;
+        try {
             foreach ($commands as $index => $commandData) {
-                if ($step === 1) {
-                    if (!isset($commandData['command'])) {
-                        throw new \InvalidArgumentException('The command attribute is empty at item[' . $index . ']');
-                    }
-                    if (!is_string($commandData['command'])) {
-                        throw new \InvalidArgumentException('The command attribute is empty at item[' . $index . ']');
-                    }
 
-                    // where data validation and optimization
-                    if (isset($commandData['where'])) {
-                        $whereData = [];
-                        foreach ($commandData['where'] as $whereDataItem) {
-                            $valid = false;
-                            if (is_array($whereDataItem) && isset($whereDataItem[0], $whereDataItem[1]) && is_string($whereDataItem[0])) {
-                                if (isset($whereData[$whereDataItem[0]])) {
-                                    throw new \InvalidArgumentException('where criteria already set');
-                                }
-                                if ($whereDataItem[0] !== 'key' && $whereDataItem[0] !== 'body' && substr($whereDataItem[0], 0, 9) !== 'metadata.') {
-                                    throw new \InvalidArgumentException('invalid where criteria - ' . $whereDataItem[0]);
-                                }
-                                if (!isset($whereData[$whereDataItem[0]])) {
-                                    $whereData[$whereDataItem[0]] = [];
-                                }
-                                $whereOperator = isset($whereDataItem[2]) ? $whereDataItem[2] : '==';
-                                if (array_search($whereOperator, ['==', 'regexp', 'search', 'startsWith', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
-                                    throw new \InvalidArgumentException('invalid where operator - ' . $whereOperator);
-                                }
-                                if (is_string($whereDataItem[1])) {
-                                    $valid = true;
-                                    $whereData[$whereDataItem[0]][] = [$whereOperator, $whereDataItem[1]];
-                                } elseif (is_array($whereDataItem[1])) {
-                                    $allValid = sizeof($whereDataItem[1]) > 0;
-                                    foreach ($whereDataItem[1] as $valueItem) {
-                                        if (!is_string($valueItem)) {
-                                            $allValid = false;
-                                            break;
-                                        }
-                                    }
-                                    if ($allValid) {
-                                        $valid = true;
-                                        $temp = array_unique($whereDataItem[1]);
-                                        foreach ($temp as $whereDataItemValue) {
-                                            $whereData[$whereDataItem[0]][] = [$whereOperator, $whereDataItemValue];
-                                        }
-                                    }
-                                }
+                $getProperty = function($name, $required = false) use ($index, $commandData, $isValidMetadata) {
+                    if ($name === 'command') {
+                        if (isset($commandData['command'])) {
+                            if (!is_string($commandData['command'])) {
+                                throw new \InvalidArgumentException('The command property must be of type string for item[' . $index . ']');
                             }
-                            if (!$valid) {
-                                throw new \InvalidArgumentException('Where data not valid');
+                            return $commandData['command'];
+                        }
+                    } elseif ($name === 'key') {
+                        if (isset($commandData['key'])) {
+                            if (!is_string($commandData['key'])) {
+                                throw new \InvalidArgumentException('The key property must be of type string for item[' . $index . ']');
                             }
-                        }
-                        foreach ($whereData as $whereItemKey => $whereItemValueData) {
-                            if ($whereItemKey === 'key') {
-                                foreach ($whereData['key'] as $whereKeyData) {
-                                    if ($whereKeyData[0] === '==') {
-                                        if (!$this->isValidKey($whereKeyData[1])) {
-                                            throw new \InvalidArgumentException('The key attribute in where data is not valid');
-                                        }
-                                    }
-                                }
-                            } elseif (substr($whereItemKey, 0, 9) === 'metadata.') {
-                                if (!$isValidMetadata($whereItemKey, '', false)) {
-                                    throw new \InvalidArgumentException('The metadata key (' . $whereItemKey . ') in where data is not valid');
-                                }
+                            if (!$this->isValidKey($commandData['key'])) {
+                                throw new \InvalidArgumentException('The key property is not valid for item[' . $index . ']');
                             }
+                            return $commandData['key'];
                         }
-
-                        if (!isset($cache[$index])) {
-                            $cache[$index] = [];
-                        }
-                        $cache[$index]['where'] = $whereData;
-                    }
-                }
-                $command = $commandData['command'];
-
-                // common actions
-                if ($command === 'get' || $command === 'set' || $command === 'append' || $command === 'delete') {
-                    if ($step === 1) {
-                        if (!isset($commandData['key'])) {
-                            throw new \InvalidArgumentException('key is required for "' . $command . '" command at item[' . $index . ']');
-                        }
-                        if (!is_string($commandData['key']) || !$this->isValidKey($commandData['key'])) {
-                            throw new \InvalidArgumentException('key is not valid');
-                        }
-                    }
-                }
-                if ($command === 'get' || $command === 'search') {
-                    $resultCodes = isset($commandData['result']) ? $commandData['result'] : [];
-                    $metadataNamesResultCodes = [];
-                    foreach ($resultCodes as $resultCode) {
-                        if (substr($resultCode, 0, 9) === 'metadata.') {
-                            $metadataNamesResultCodes[] = substr($resultCode, 9);
-                            if (!$isValidMetadata($resultCode, '', false)) {
-                                throw new \InvalidArgumentException('The metadata result key (' . $resultCode . ') is not valid');
+                    } elseif ($name === 'body') {
+                        if (isset($commandData['body'])) {
+                            if (!is_string($commandData['body'])) {
+                                throw new \InvalidArgumentException('The body property must be of type string for item[' . $index . ']');
                             }
+                            return $commandData['body'];
                         }
-                    }
-                    if (!isset($cache[$index])) {
-                        $cache[$index] = [];
-                    }
-                    $cache[$index]['resultCodes'] = $resultCodes;
-                    $cache[$index]['metadataNamesResultCodes'] = $metadataNamesResultCodes;
-                }
-
-                if ($command === 'set' || $command === 'append' || $command === 'delete') {
-                    if ($step === 1) {
+                    } elseif ($name === 'sourceKey') {
+                        if (isset($commandData['sourceKey'])) {
+                            if (!is_string($commandData['sourceKey'])) {
+                                throw new \InvalidArgumentException('The sourceKey property must be of type string for item[' . $index . ']');
+                            }
+                            if (!$this->isValidKey($commandData['sourceKey'])) {
+                                throw new \InvalidArgumentException('The sourceKey property is not valid for item[' . $index . ']');
+                            }
+                            return $commandData['sourceKey'];
+                        }
+                    } elseif ($name === 'targetKey') {
+                        if (isset($commandData['targetKey'])) {
+                            if (!is_string($commandData['targetKey'])) {
+                                throw new \InvalidArgumentException('The targetKey property must be of type string for item[' . $index . ']');
+                            }
+                            if (!$this->isValidKey($commandData['targetKey'])) {
+                                throw new \InvalidArgumentException('The targetKey property is not valid for item[' . $index . ']');
+                            }
+                            return $commandData['targetKey'];
+                        }
+                    } elseif ($name === 'metadata.*') {
+                        $result = [];
                         foreach ($commandData as $commandDataKey => $commandDataValue) {
                             if (substr($commandDataKey, 0, 9) === 'metadata.') {
                                 if (!$isValidMetadata($commandDataKey, $commandDataValue, true)) {
-                                    throw new \InvalidArgumentException('The metadata key (' . $commandDataKey . ') is not valid');
+                                    throw new \InvalidArgumentException('The metadata key (' . $commandDataKey . ') is not valid for item[' . $index . ']');
+                                }
+                                $result[substr($commandDataKey, 9)] = $commandDataValue;
+                            }
+                        }
+                        if (!empty($result)) {
+                            return $result;
+                        }
+                    } elseif ($name === 'where') {
+                        if (isset($commandData['where'])) {
+                            if (!is_array($commandData['where'])) {
+                                throw new \InvalidArgumentException('The where property must be of type array for item[' . $index . ']');
+                            }
+                            $result = [];
+                            foreach ($commandData['where'] as $whereItem) {
+                                $valid = false;
+                                if (is_array($whereItem) && isset($whereItem[0], $whereItem[1]) && is_string($whereItem[0])) {
+                                    $whereKey = $whereItem[0];
+                                    $whereValue = $whereItem[1];
+                                    if (isset($result[$whereKey])) {
+                                        throw new \InvalidArgumentException('Where key ' . $whereKey . ' already set.');
+                                    }
+                                    if ($whereKey !== 'key' && $whereKey !== 'body' && substr($whereKey, 0, 9) !== 'metadata.') {
+                                        throw new \InvalidArgumentException('Invalid where key ' . $whereKey . '.');
+                                    }
+                                    if (!isset($result[$whereKey])) {
+                                        $result[$whereKey] = [];
+                                    }
+                                    $whereOperator = isset($whereItem[2]) ? $whereItem[2] : '==';
+                                    if (array_search($whereOperator, ['==', 'regexp', 'search', 'startsWith', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
+                                        throw new \InvalidArgumentException('Invalid where operator ' . $whereOperator . '.');
+                                    }
+                                    if (is_string($whereValue)) {
+                                        $result[$whereKey][] = [$whereOperator, $whereValue];
+                                        $valid = true;
+                                    } elseif (is_array($whereValue)) {
+                                        $valid = true;
+                                        foreach ($whereValue as $whereValueItem) {
+                                            if (!is_string($whereValueItem)) {
+                                                $valid = false;
+                                                break;
+                                            }
+                                        }
+                                        if ($valid) {
+                                            $temp = array_unique($whereValue);
+                                            foreach ($temp as $whereItemValue) {
+                                                $result[$whereKey][] = [$whereOperator, $whereItemValue];
+                                            }
+                                        }
+                                    }
+                                }
+                                if (!$valid) {
+                                    throw new \InvalidArgumentException('Where data not valid.');
                                 }
                             }
+
+                            if (isset($result['key'])) {
+                                foreach ($result['key'] as $whereKeyData) {
+                                    $whereOperator = $whereKeyData[0];
+                                    if ($whereOperator === '==' || $whereOperator === 'equal') {
+                                        if (!$this->isValidKey($whereKeyData[1])) {
+                                            throw new \InvalidArgumentException('The key value in where data is not valid.');
+                                        }
+                                    }
+                                }
+                            }
+                            foreach ($result as $whereItemKey => $whereItemData) {
+                                if (substr($whereItemKey, 0, 9) === 'metadata.') {
+                                    if (!$isValidMetadata($whereItemKey, '', false)) {
+                                        throw new \InvalidArgumentException('The metadata key (' . $whereItemKey . ') in where data is not valid.');
+                                    }
+                                }
+                            }
+                            return $result;
                         }
-                        if (isset($commandData['body'])) {
-                            if (!is_string($commandData['body'])) {
-                                throw new \InvalidArgumentException('body is not valid');
+                    } elseif ($name === 'result') {
+                        if (isset($commandData['result'])) {
+                            if (!is_array($commandData['result'])) {
+                                throw new \InvalidArgumentException('The result property must be of type array for item[' . $index . ']');
+                            }
+                            return $commandData['result'];
+                        }
+                    } elseif ($name === 'result.metadata.*') {
+                        if (isset($commandData['result'])) {
+                            if (!is_array($commandData['result'])) {
+                                throw new \InvalidArgumentException('The result property must be of type array for item[' . $index . ']');
+                            }
+                            $resultKeys = isset($commandData['result']) ? $commandData['result'] : [];
+                            $result = [];
+                            foreach ($resultKeys as $resultCode) {
+                                if (substr($resultCode, 0, 9) === 'metadata.') {
+                                    $result[] = substr($resultCode, 9);
+                                    if (!$isValidMetadata($resultCode, '', false)) {
+                                        throw new \InvalidArgumentException('The metadata result key (' . $resultCode . ') is not valid for item[' . $index . ']');
+                                    }
+                                }
+                            }
+                            if (!empty($result)) {
+                                return $result;
                             }
                         }
-                    } elseif ($step === 2) {
-                        $key = $commandData['key'];
-                        if (!$this->openObjectFilesForWriting($filePointers, $key, true, $command === 'delete' || $hasMetadataInArray($commandData))) {
-                            $lockFailure = true;
-                            $lockFailureReason = 'The key (' . $key . ') is locked (' . $command . ')';
-                        }
-                    } elseif ($step === 3) {
-                        $key = $commandData['key'];
-                        if ($command === 'delete') {
-                            ftruncate($filePointers[$key][0], 0);
-                            fseek($filePointers[$key][0], 0);
-                            $filesToDelete[$this->objectsDir . $key] = 1;
-                            $filesToDelete[$this->metadataDir . $key] = 1;
+                    } else {
+                        throw new \InvalidArgumentException('Invalid property ' . $name . ' for item[' . $index . ']');
+                    }
+                    if ($required) {
+                        throw new \InvalidArgumentException('The ' . $name . ' property is required for item[' . $index . ']');
+                    }
+                    return null;
+                };
+
+                $command = $getProperty('command', true);
+
+                if ($command === 'set') {
+                    $key = $getProperty('key', true);
+                    $body = $getProperty('body');
+                    $metadata = $getProperty('metadata.*');
+                    $modifyBody = $body !== null;
+                    $modifyMetadata = $metadata !== null;
+                    if ($modifyBody) {
+                        $prepareFileForWriting($this->objectsDir . $key);
+                    }
+                    if ($modifyMetadata && sizeof($metadata) === 1 && isset($metadata['*']) && $metadata['*'] === '') { // Check for setting empty metadata
+                        if (isset($filePointers[$this->metadataDir . $key])) { // Other command opened it and may change change it
                         } else {
-                            if (isset($filesToDelete[$this->objectsDir . $key])) {
-                                unset($filesToDelete[$this->objectsDir . $key]);
-                            }
-                            if (isset($commandData['body'])) {
-                                if ($command === 'set') {
-                                    ftruncate($filePointers[$key][0], 0);
-                                    fseek($filePointers[$key][0], 0);
-                                } elseif ($command === 'append') {
-                                    fseek($filePointers[$key][0], 0, SEEK_END);
-                                }
-                                fwrite($filePointers[$key][0], $commandData['body']);
+                            if (!is_file($this->metadataDir . $key)) { // The file does not exist
+                                $modifyMetadata = false;
                             }
                         }
-                        if ($command === 'set' && $filePointers[$key][1] !== null) {
-                            $metadata = $getMetadataFromArray($commandData);
-                            $fileMetadata = [];
-                            if (is_file($this->metadataDir . $key)) {
-                                $metadataFileSize = filesize($this->metadataDir . $key);
-                                if ($metadataFileSize > 0) {
-                                    $fileMetadata = $decodeMetadata(fread($filePointers[$key][1], $metadataFileSize));
-                                }
-                            }
+                    }
+                    if ($modifyMetadata) {
+                        if (!$modifyBody) { // Used for the lock
+                            $prepareFileForWriting($this->objectsDir . $key);
+                        }
+                        $prepareFileForWriting($this->metadataDir . $key);
+                    }
+
+                    $functions[$index] = function() use ($key, $body, $metadata, $modifyBody, $modifyMetadata, $setFileContent, $getFileContent, $deleteFile, $decodeMetadata, $encodeMetaData) {
+                        if ($modifyBody) {
+                            $setFileContent($this->objectsDir . $key, $body);
+                        }
+                        if ($modifyMetadata) {
+                            $objectMetadata = $decodeMetadata($getFileContent($this->metadataDir . $key));
                             if (isset($metadata['*'])) {
-                                foreach ($fileMetadata as $fileMetadataKey => $fileMetadataValue) {
-                                    $fileMetadata[$fileMetadataKey] = $metadata['*'];
+                                foreach ($objectMetadata as $metadataKey => $metadataValue) {
+                                    $objectMetadata[$metadataKey] = $metadata['*'];
                                 }
                                 unset($metadata['*']);
                             }
-                            $fileMetadata = array_merge($fileMetadata, $metadata);
-                            foreach ($fileMetadata as $fileMetadataKey => $fileMetadataValue) {
-                                if ($fileMetadataValue === '') {
-                                    unset($fileMetadata[$fileMetadataKey]);
+                            $objectMetadata = array_merge($objectMetadata, $metadata);
+                            foreach ($objectMetadata as $metadataKey => $metadataValue) {
+                                if ($metadataValue === '') {
+                                    unset($objectMetadata[$metadataKey]);
                                 }
                             }
-                            ftruncate($filePointers[$key][1], 0);
-                            fseek($filePointers[$key][1], 0);
-                            if (empty($fileMetadata)) {
-                                $filesToDelete[$this->metadataDir . $key] = 1;
+                            if (empty($objectMetadata)) {
+                                $deleteFile($this->metadataDir . $key);
                             } else {
-                                if ($command !== 'delete') {
-                                    if (isset($filesToDelete[$this->metadataDir . $key])) {
-                                        unset($filesToDelete[$this->metadataDir . $key]);
-                                    }
-                                    fwrite($filePointers[$key][1], $encodeMetaData($fileMetadata));
-                                }
+                                $setFileContent($this->metadataDir . $key, $encodeMetaData($objectMetadata));
                             }
                         }
-                        $result[$index] = true;
-                    }
-                } elseif ($command === 'get') {
-                    if ($step === 3) {
-                        $objectKey = $commandData['key'];
-
-                        if (isset($filesToDelete[$this->objectsDir . $objectKey])) {
-                            $result[$index] = [];
-                        } elseif (!is_file($this->objectsDir . $objectKey)) {
-                            $result[$index] = [];
+                        return true;
+                    };
+                } elseif ($command === 'append') {
+                    $key = $getProperty('key', true);
+                    $body = $getProperty('body', true);
+                    $prepareFileForWriting($this->objectsDir . $key);
+                    $functions[$index] = function() use ($key, $body, $appendFileContent) {
+                        $appendFileContent($this->objectsDir . $key, $body);
+                        return true;
+                    };
+                } elseif ($command === 'delete') {
+                    $key = $getProperty('key', true);
+                    $functions[$index] = function() use ($key, $deleteFile) {
+                        $deleteFile($this->objectsDir . $key);
+                        $deleteFile($this->metadataDir . $key);
+                        return true;
+                    };
+                } elseif ($command === 'duplicate') {
+                    $sourceKey = $getProperty('sourceKey', true);
+                    $targetKey = $getProperty('targetKey', true);
+                    $prepareFileForReading($this->objectsDir . $sourceKey, true);
+                    $prepareFileForReading($this->metadataDir . $sourceKey);
+                    $prepareFileForWriting($this->objectsDir . $targetKey);
+                    $prepareFileForWriting($this->metadataDir . $targetKey); // todo optimize if source has metadata or current has metadata
+                    $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
+                        $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
+                        if ($sourceBody === null) { // The source file is deleted in previous command
+                            return false;
                         } else {
-                            $resultCodes = $cache[$index]['resultCodes'];
-                            $metadataNamesResultCodes = $cache[$index]['metadataNamesResultCodes'];
+                            $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
+                            $setFileContent($this->objectsDir . $targetKey, $sourceBody);
+                            if ($sourceMetadata === null) {
+                                $deleteFile($this->metadataDir . $targetKey);
+                            } else {
+                                $setFileContent($this->metadataDir . $targetKey, $sourceMetadata);
+                            }
+                            return true;
+                        }
+                    };
+                } elseif ($command === 'rename') {
+                    $sourceKey = $getProperty('sourceKey', true);
+                    $targetKey = $getProperty('targetKey', true);
+                    $prepareFileForReading($this->objectsDir . $sourceKey, true);
+                    $prepareFileForWriting($this->objectsDir . $sourceKey);
+                    $prepareFileForWriting($this->metadataDir . $sourceKey); // todo optimizations maybe???
+                    $prepareFileForWriting($this->objectsDir . $targetKey);
+                    $prepareFileForWriting($this->metadataDir . $targetKey); // todo optimizations maybe???
+                    $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
+                        $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
+                        if ($sourceBody === null) { // The source file is deleted in previous command
+                            return false;
+                        } else {
+                            $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
+                            $setFileContent($this->objectsDir . $targetKey, $sourceBody);
+                            if ($sourceMetadata === null) {
+                                $deleteFile($this->metadataDir . $targetKey);
+                            } else {
+                                $setFileContent($this->metadataDir . $targetKey, $sourceMetadata);
+                            }
+                            $deleteFile($this->objectsDir . $sourceKey);
+                            $deleteFile($this->metadataDir . $sourceKey);
+                            return true;
+                        }
+                    };
+                } elseif ($command === 'get') {
+                    $key = $getProperty('key', true);
+                    $resultKeys = $getProperty('result');
+                    if ($resultKeys === null) {
+                        $resultKeys = [];
+                    }
+                    $metadataResultKeys = $getProperty('result.metadata.*');
+                    $returnBody = array_search('body', $resultKeys) !== false;
+                    $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
+                    if ($returnBody) {
+                        $prepareFileForReading($this->objectsDir . $key);
+                    }
+                    if ($returnMetadata) {
+                        $prepareFileForReading($this->metadataDir . $key);
+                    }
 
+                    $functions[$index] = function() use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $getFileContent, $decodeMetadata) {
+                        $content = $getFileContent($this->objectsDir . $key);
+                        if ($content === null) {
+                            return [];
+                        } else {
                             $objectResult = [];
-                            if (array_search('key', $resultCodes) !== false) {
-                                $objectResult['key'] = $objectKey;
+                            if (array_search('key', $resultKeys) !== false) {
+                                $objectResult['key'] = $key;
                             }
-                            if (array_search('body', $resultCodes) !== false) {
-                                $objectResult['body'] = (string) $this->getFileContent($filePointers, $objectKey, 0);
+                            if ($returnBody) {
+                                $objectResult['body'] = $content;
                             }
-                            if (array_search('metadata', $resultCodes) !== false || !empty($metadataNamesResultCodes)) {
-                                $objectMetadata = $this->getFileContent($filePointers, $objectKey, 1);
-                                if ($objectMetadata === null) {
-                                    $objectMetadata = [];
-                                } else {
-                                    $objectMetadata = $decodeMetadata($objectMetadata);
-                                }
-                                if (array_search('metadata', $resultCodes) !== false) {
+                            if ($returnMetadata) {
+                                $objectMetadata = $decodeMetadata($getFileContent($this->metadataDir . $key));
+                                if (array_search('metadata', $resultKeys) !== false) { // all metadata
                                     if (is_array($objectMetadata)) {
                                         foreach ($objectMetadata as $metadataKey => $metadataValue) {
                                             $objectResult['metadata.' . $metadataKey] = $metadataValue;
                                         }
                                     }
-                                } elseif (!empty($metadataNamesResultCodes)) {
-                                    foreach ($metadataNamesResultCodes as $metadataKey) {
-                                        $objectResult['metadata.' . $metadataKey] = is_array($objectMetadata) && isset($objectMetadata[$metadataKey]) ? $objectMetadata[$metadataKey] : '';
+                                } elseif (!empty($metadataResultKeys)) { // requested keys
+                                    foreach ($metadataResultKeys as $metadataResultKey) {
+                                        $objectResult['metadata.' . $metadataResultKey] = isset($objectMetadata[$metadataResultKey]) ? $objectMetadata[$metadataResultKey] : '';
                                     }
                                 }
                             }
-                            $result[$index] = $objectResult;
+                            return $objectResult;
                         }
-                    }
+                    };
                 } elseif ($command === 'search') {
+                    $where = $getProperty('where');
+                    if ($where === null) {
+                        $where = [];
+                    }
+                    $resultKeys = $getProperty('result');
+                    if ($resultKeys === null) {
+                        $resultKeys = [];
+                    }
+                    $metadataResultKeys = $getProperty('result.metadata.*');
+                    $returnBody = array_search('body', $resultKeys) !== false;
+                    $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
 
-                    if ($step === 3) {
-                        // get object keys
-                        $hasWhere = isset($cache[$index], $cache[$index]['where']);
-                        $getAllKeys = true;
-                        $objectsKeys = [];
-                        if ($hasWhere && isset($cache[$index]['where']['key'])) {
-                            $keysData = $cache[$index]['where']['key'];
-                            $keysDone = true;
-                            foreach ($keysData as $keyData) {
-                                if ($keyData[0] === '==' || $keyData[0] === 'equal') {
-                                    $objectsKeys[] = $keyData[1];
-                                } elseif ($keyData[0] === 'startsWith' || $keyData[0] === 'startWith') {
-                                    $position = strrpos($keyData[1], '/');
-                                    if ($position !== false) {
-                                        $dir = substr($keyData[1], 0, $position);
-                                        $files = $this->getFiles($this->objectsDir . $dir . '/', true);
-                                        foreach ($files as $filename) {
-                                            $objectsKeys[] = $dir . '/' . $filename;
-                                        }
-                                    } else {
-                                        $keysDone = false;
-                                        break;
+                    $whereKeys = [];
+                    $whereMetadataKeys = [];
+
+                    $whereKeysPrepared = false;
+                    if (isset($where['key'])) {
+                        $keysData = $where['key'];
+                        $whereKeysPrepared = true;
+                        foreach ($keysData as $keyData) {
+                            if ($keyData[0] === '==' || $keyData[0] === 'equal') {
+                                $whereKeys[] = $keyData[1];
+                            } elseif ($keyData[0] === 'startsWith' || $keyData[0] === 'startWith') {
+                                $position = strrpos($keyData[1], '/');
+                                if ($position !== false) {
+                                    $dir = substr($keyData[1], 0, $position);
+                                    $files = $this->getFiles($this->objectsDir . $dir . '/', true);
+                                    foreach ($files as $filename) {
+                                        $whereKeys[] = $dir . '/' . $filename;
                                     }
                                 } else {
-                                    $keysDone = false;
+                                    $whereKeysPrepared = false;
                                     break;
                                 }
-                            }
-                            if ($keysDone) {
-                                $getAllKeys = false;
-                            }
-                        }
-                        if ($getAllKeys) {
-                            $objectsKeys = $this->getFiles($this->objectsDir, true);
-                        }
-
-                        $resultCodes = $cache[$index]['resultCodes'];
-                        $metadataNamesResultCodes = $cache[$index]['metadataNamesResultCodes'];
-
-                        $hasMetadataNamesResultCodes = !empty($metadataNamesResultCodes);
-
-                        $metadataNamesWhereCodes = [];
-                        if ($hasWhere) {
-                            foreach ($cache[$index]['where'] as $whereCode => $whereValue) {
-                                if (substr($whereCode, 0, 9) === 'metadata.') {
-                                    $metadataNamesWhereCodes[substr($whereCode, 9)] = $whereValue;
-                                }
+                            } else {
+                                $whereKeysPrepared = false;
+                                break;
                             }
                         }
-                        $hasMetadataNamesWhereCodes = !empty($metadataNamesWhereCodes);
-                        $hasBodyInWhere = isset($cache[$index]['where']['body']);
+                    }
+                    if (!$whereKeysPrepared) {
+                        $whereKeys = $this->getFiles($this->objectsDir, true);
+                    }
+                    foreach ($where as $whereKey => $whereValue) {
+                        if (substr($whereKey, 0, 9) === 'metadata.') {
+                            $whereMetadataKeys[substr($whereKey, 9)] = $whereValue;
+                        }
+                    }
 
-                        $result[$index] = [];
-                        foreach ($objectsKeys as $objectKey) {
+                    $hasWhereMetadata = !empty($whereMetadataKeys);
+                    $hasWhereBody = isset($where['body']);
 
-                            if (isset($filesToDelete[$this->objectsDir . $objectKey])) {
-                                continue;
-                            }
-                            if (!is_file($this->objectsDir . $objectKey)) {
-                                continue;
-                            }
+                    foreach ($whereKeys as $key) {
+                        if ($returnBody || $hasWhereBody) {
+                            $prepareFileForReading($this->objectsDir . $key);
+                        }
+                        if ($returnMetadata || $hasWhereMetadata) {
+                            $prepareFileForReading($this->metadataDir . $key);
+                        }
+                    }
+
+                    $functions[$index] = function() use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $decodeMetadata, $areWhereConditionsMet) {
+                        $result = [];
+                        foreach ($whereKeys as $key) {
 
                             $objectResult = [];
+                            if (isset($where['key'])) {
+                                if (!$areWhereConditionsMet($key, $where['key'])) {
+                                    continue;
+                                }
+                            }
                             $objectBody = null;
-                            $objectMetadata = null;
-                            foreach ($resultCodes as $resultCode) {
-                                if ($objectBody === null && ($resultCode === 'body' || $hasBodyInWhere)) {
-                                    $objectBody = $this->getFileContent($filePointers, $objectKey, 0);
-                                }
-                                if ($objectMetadata === null && ($resultCode === 'metadata' || $hasMetadataNamesResultCodes || $hasMetadataNamesWhereCodes)) {
-                                    $objectMetadata = $this->getFileContent($filePointers, $objectKey, 1);
-                                    if ($objectMetadata === null) {
-                                        $objectMetadata = [];
-                                    } else {
-                                        $objectMetadata = $decodeMetadata($objectMetadata);
-                                    }
+                            if ($returnBody || $hasWhereBody) {
+                                $objectBody = $getFileContent($this->objectsDir . $key);
+                                if ($objectBody === null) {
+                                    continue;
                                 }
                             }
-                            if ($hasWhere) {
-                                if (isset($cache[$index]['where']['key'])) {
-                                    if (!$areWhereConditionsMet($objectKey, $cache[$index]['where']['key'])) {
-                                        continue;
+                            if ($hasWhereBody && !$areWhereConditionsMet($objectBody, $where['body'])) {
+                                continue;
+                            }
+                            $objectMetadata = $returnMetadata || $hasWhereMetadata ? $decodeMetadata($getFileContent($this->metadataDir . $key)) : [];
+                            if ($hasWhereMetadata) {
+                                $found = false;
+                                foreach ($whereMetadataKeys as $whereMetadataKey => $whereMetadataValue) {
+                                    if ($areWhereConditionsMet(isset($objectMetadata[$whereMetadataKey]) ? $objectMetadata[$whereMetadataKey] : '', $whereMetadataValue)) {
+                                        $found = true;
+                                        break;
                                     }
                                 }
-                                if (isset($cache[$index]['where']['body'])) {
-                                    if (!$areWhereConditionsMet($objectBody, $cache[$index]['where']['body'])) {
-                                        continue;
-                                    }
+                                if (!$found) {
+                                    continue;
                                 }
-                                if ($hasMetadataNamesWhereCodes) {
-                                    $found = false;
-                                    foreach ($metadataNamesWhereCodes as $whereCode => $whereValue) {
-                                        if ($areWhereConditionsMet(isset($objectMetadata[$whereCode]) ? $objectMetadata[$whereCode] : '', $whereValue)) {
-                                            $found = true;
-                                            break;
+                            }
+
+                            if (array_search('key', $resultKeys) !== false) {
+                                $objectResult['key'] = $key;
+                            }
+                            if ($returnBody) {
+                                $objectResult['body'] = $objectBody;
+                            }
+                            if ($returnMetadata) {
+                                if (array_search('metadata', $resultKeys) !== false) { // all metadata
+                                    if (is_array($objectMetadata)) {
+                                        foreach ($objectMetadata as $metadataKey => $metadataValue) {
+                                            $objectResult['metadata.' . $metadataKey] = $metadataValue;
                                         }
                                     }
-                                    if (!$found) {
-                                        continue;
+                                } elseif (!empty($metadataResultKeys)) { // requested keys
+                                    foreach ($metadataResultKeys as $metadataResultKey) {
+                                        $objectResult['metadata.' . $metadataResultKey] = isset($objectMetadata[$metadataResultKey]) ? $objectMetadata[$metadataResultKey] : '';
                                     }
                                 }
                             }
 
-                            foreach ($resultCodes as $resultCode) {
-                                if ($resultCode === 'key') {
-                                    $objectResult['key'] = $objectKey;
-                                } elseif ($resultCode === 'body') {
-                                    $objectResult['body'] = $objectBody;
-                                } elseif ($resultCode === 'metadata' || $hasMetadataNamesResultCodes) {
-                                    if ($resultCode === 'metadata') {
-                                        if (is_array($objectMetadata)) {
-                                            foreach ($objectMetadata as $metadataKey => $metadataValue) {
-                                                $objectResult['metadata.' . $metadataKey] = $metadataValue;
-                                            }
-                                        }
-                                    } elseif ($hasMetadataNamesResultCodes) {
-                                        foreach ($metadataNamesResultCodes as $metadataKey) {
-                                            $objectResult['metadata.' . $metadataKey] = is_array($objectMetadata) && isset($objectMetadata[$metadataKey]) ? $objectMetadata[$metadataKey] : '';
-                                        }
-                                    }
-                                }
-                            }
-
-                            $result[$index][] = $objectResult;
+                            $result[] = $objectResult;
                         }
-                    }
-                } elseif ($command === 'duplicate' || $command === 'rename') {
-                    if ($step === 1) {
-                        if (!isset($commandData['sourceKey'])) {
-                            throw new \InvalidArgumentException('sourceKey is required for "' . $command . '" command at item[' . $index . ']');
-                        }
-                        if (!is_string($commandData['sourceKey']) || !$this->isValidKey($commandData['sourceKey'])) {
-                            throw new \InvalidArgumentException('sourceKey is not valid');
-                        }
-                        if (!isset($commandData['targetKey'])) {
-                            throw new \InvalidArgumentException('targetKey is required for "' . $command . '" command at item[' . $index . ']');
-                        }
-                        if (!is_string($commandData['targetKey']) || !$this->isValidKey($commandData['targetKey'])) {
-                            throw new \InvalidArgumentException('targetKey is not valid');
-                        }
-                        if (!is_file($this->objectsDir . $commandData['sourceKey'])) {
-                            throw new \InvalidArgumentException('sourceKey object not found in "' . $command . '" command at item[' . $index . '] (' . $commandData['sourceKey'] . ')');
-                        }
-                    } elseif ($step === 2) {
-                        if ($command === 'duplicate') {
-                            if (!$this->openObjectFilesForWriting($filePointers, $commandData['targetKey'], true, true)) {
-                                $lockFailure = true;
-                                $lockFailureReason = 'The targetKey (' . $commandData['targetKey'] . ') is locked (duplicate)';
-                            }
-                        } elseif ($command === 'rename') {
-                            if (!$this->openObjectFilesForWriting($filePointers, $commandData['sourceKey'], true, true)) {
-                                $lockFailure = true;
-                                $lockFailureReason = 'The sourceKey (' . $commandData['sourceKey'] . ') is locked (rename)';
-                            }
-                            if (!$this->openObjectFilesForWriting($filePointers, $commandData['targetKey'], true, true)) {
-                                $lockFailure = true;
-                                $lockFailureReason = 'The targetKey (' . $commandData['targetKey'] . ') is locked (rename)';
-                            }
-                        }
-                    } elseif ($step === 3) {
-                        $sourceKey = $commandData['sourceKey'];
-                        $targetKey = $commandData['targetKey'];
-
-                        if ($command === 'rename') {
-                            $filesToDelete[$this->objectsDir . $sourceKey] = 1;
-                            $filesToDelete[$this->metadataDir . $sourceKey] = 1;
-                        }
-                        if (isset($filesToDelete[$this->objectsDir . $targetKey])) {
-                            unset($filesToDelete[$this->objectsDir . $targetKey]);
-                        }
-
-                        $objectBody = $this->getFileContent($filePointers, $sourceKey, 0);
-                        if ($objectBody === null) {
-                            $objectBody = '';
-                        }
-
-                        $objectMetadata = $this->getFileContent($filePointers, $sourceKey, 1);
-
-                        if (is_string($objectBody)) {
-                            ftruncate($filePointers[$targetKey][0], 0);
-                            fseek($filePointers[$targetKey][0], 0);
-                            fwrite($filePointers[$targetKey][0], $objectBody);
-                        }
-                        if (is_string($objectMetadata)) {
-                            if (isset($filesToDelete[$this->metadataDir . $targetKey])) {
-                                unset($filesToDelete[$this->metadataDir . $targetKey]);
-                            }
-                            ftruncate($filePointers[$targetKey][1], 0);
-                            fseek($filePointers[$targetKey][1], 0);
-                            fwrite($filePointers[$targetKey][1], $objectMetadata);
-                        }
-                        if ($command === 'rename') {
-                            ftruncate($filePointers[$sourceKey][0], 0);
-                            fseek($filePointers[$sourceKey][0], 0);
-                            ftruncate($filePointers[$sourceKey][1], 0);
-                            fseek($filePointers[$sourceKey][1], 0);
-                        }
-                        $result[$index] = true;
-                    }
+                        return $result;
+                    };
                 } else {
                     throw new \InvalidArgumentException('invalid command "' . $command . '" at item[' . $index . ']');
                 }
             }
-
-            if ($lockFailure) {
-                break;
-            }
+        } catch (\Exception $e) {
+            $thrownException = $e;
         }
 
-        foreach ($filePointers as $index => $filePointer) {
-            if ($filePointers[$index][0] !== null) {
-                fclose($filePointers[$index][0]);
+        if ($thrownException === null) {
+            $result = [];
+            foreach ($commands as $index => $commandData) {
+                $result[$index] = $functions[$index]();
             }
-            if ($filePointers[$index][1] !== null) {
-                fclose($filePointers[$index][1]);
-            }
+            unset($functions);
+        }
+
+        foreach ($filePointers as $filename => $filePointer) {
+            fclose($filePointer);
         }
         unset($filePointers);
 
-        if ($lockFailure) {
-            restore_error_handler();
-            throw new \IvoPetkov\ObjectStorage\ObjectLockedException($lockFailureReason);
-        } else {
+        foreach ($emptyOpenedFiles as $filename => $one) {
+            if (is_file($filename)) {
+                unlink($filename);
+            }
+        }
+
+        if ($thrownException === null) {
             foreach ($filesToDelete as $filename => $one) {
                 if (is_file($filename)) {
                     unlink($filename);
                 }
             }
+            unset($filesToDelete);
             restore_error_handler();
+            return $result;
+        } else {
+            restore_error_handler();
+            throw $thrownException;
         }
-        return $result;
     }
 
     /**
@@ -897,117 +1031,6 @@ class ObjectStorage
             }
         }
         return $result;
-    }
-
-    /**
-     * Returns file pointer for writing retrying several times. Returns false if unsuccessful.
-     * 
-     * @param string $filename The filename
-     * @return resource|false File pointer of false if unsuccessful
-     * @throws \IvoPetkov\ObjectStorage\ErrorException
-     */
-    private function getFilePointerForWriting($filename)
-    {
-        if (is_dir($filename)) {
-            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
-        }
-        if ($this->createFileDirIfNotExists($filename) === false) {
-            throw new \IvoPetkov\ObjectStorage\ErrorException('Cannot write at ' . $filename);
-        }
-        $getFilePointer = function() use ($filename) {
-            $filePointer = fopen($filename, "c+");
-            if ($filePointer !== false) {
-                $flockResult = flock($filePointer, LOCK_EX | LOCK_NB);
-                if ($flockResult !== false) {
-                    return $filePointer;
-                } else {
-                    fclose($filePointer);
-                }
-            }
-            return false;
-        };
-        for ($i = 0; $i < $this->lockRetriesCount; $i++) {
-            $filePointer = $getFilePointer();
-            if ($filePointer !== false) {
-                return $filePointer;
-            }
-            if ($i < $this->lockRetriesCount - 1) {
-                usleep($this->lockRetryDelay);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Opens object files (main file or metadata file) for writing
-     * 
-     * @param array $filePointers List of opened files pointers
-     * @param string $key The object key
-     * @param boolean $openObjectFile The main object file will be opened if TRUE
-     * @param boolean $openMetadataFile The metadata object file will be opened if TRUE
-     * @return boolean TRUE if successful, FALSE otherwise.
-     */
-    private function openObjectFilesForWriting(&$filePointers, $key, $openObjectFile, $openMetadataFile)
-    {
-        $ok = true;
-        if (!isset($filePointers[$key])) {
-            $filePointers[$key] = [null, null];
-        }
-        if ($openObjectFile && $filePointers[$key][0] === null) {
-            $objectFilePointer = $this->getFilePointerForWriting($this->objectsDir . $key);
-            if ($objectFilePointer === false) {
-                $ok = false;
-            } else {
-                $filePointers[$key][0] = $objectFilePointer;
-            }
-        }
-
-        if ($openMetadataFile && $filePointers[$key][1] === null) {
-            $metadataFilePointer = $this->getFilePointerForWriting($this->metadataDir . $key);
-            if ($metadataFilePointer === false) {
-                $ok = false;
-            } else {
-                $filePointers[$key][1] = $metadataFilePointer;
-            }
-        }
-        return $ok;
-    }
-
-    /**
-     * Reads and returns a object file content
-     * 
-     * @param array $filePointers List of already opened files. If the key requested is not in that list it will be opened.
-     * @param string $key The object key
-     * @param int The type of object file to read. 0 - The main object file, 1 - The metadata file
-     * @return string|null The object file content or null if not existent
-     */
-    private function getFileContent($filePointers, $key, $fileType)
-    {
-
-        if (isset($filePointers[$key], $filePointers[$key][$fileType]) && $filePointers[$key][$fileType] !== null) {
-            $pointerPosition = ftell($filePointers[$key][$fileType]);
-            fseek($filePointers[$key][$fileType], 0);
-            $contents = '';
-            while (!feof($filePointers[$key][$fileType])) {
-                $contents .= fread($filePointers[$key][$fileType], 8192);
-            }
-            fseek($filePointers[$key][$fileType], $pointerPosition);
-            return $contents;
-        } else {
-            $filename = ($fileType === 0 ? $this->objectsDir : $this->metadataDir) . $key;
-            if (is_file($filename)) {
-                if (filesize($filename) === 0) {
-                    return '';
-                } else {
-                    $filePointer = fopen($filename, "r");
-                    flock($filePointer, LOCK_SH);
-                    $content = fread($filePointer, filesize($filename));
-                    fclose($filePointer);
-                    return $content;
-                }
-            }
-            return null;
-        }
     }
 
 }
