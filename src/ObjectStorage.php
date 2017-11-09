@@ -15,7 +15,7 @@ class ObjectStorage
     /**
      * The current library version
      */
-    const VERSION = '0.2.2';
+    const VERSION = '0.3.0';
 
     /**
      * The directory where the objects will be stored
@@ -56,14 +56,10 @@ class ObjectStorage
      * Creates a new Object storage instance
      * 
      * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files)
-     * @throws \InvalidArgumentException
      */
 
-    public function __construct($dir = 'data/')
+    public function __construct(string $dir = 'data/')
     {
-        if (!is_string($dir)) {
-            throw new \InvalidArgumentException('The dir argument must be a string');
-        }
         $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
         $this->objectsDir = $dir . 'objects' . DIRECTORY_SEPARATOR;
         $this->metadataDir = $dir . 'metadata' . DIRECTORY_SEPARATOR;
@@ -76,7 +72,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
      * @return array An array containing the result data if existent, empty array otherwise
      */
-    public function get($parameters)
+    public function get(array $parameters): array
     {
         return $this->executeCommand([$parameters], 'get')[0];
     }
@@ -87,7 +83,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']. Specifying metadata.* will bulk remove/update all previous metadata.
      * @return void No value is returned
      */
-    public function set($parameters)
+    public function set(array $parameters): void
     {
         $this->executeCommand([$parameters], 'set')[0];
     }
@@ -98,7 +94,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1']
      * @return void No value is returned
      */
-    public function append($parameters)
+    public function append(array $parameters): void
     {
         $this->executeCommand([$parameters], 'append')[0];
     }
@@ -109,7 +105,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return void No value is returned
      */
-    public function duplicate($parameters)
+    public function duplicate(array $parameters): void
     {
         $this->executeCommand([$parameters], 'duplicate')[0];
     }
@@ -120,7 +116,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return void No value is returned
      */
-    public function rename($parameters)
+    public function rename(array $parameters): void
     {
         $this->executeCommand([$parameters], 'rename')[0];
     }
@@ -131,7 +127,7 @@ class ObjectStorage
      * @param array $parameters Data in the following format: ['key' => 'example1']
      * @return void No value is returned
      */
-    public function delete($parameters)
+    public function delete(array $parameters): void
     {
         $this->executeCommand([$parameters], 'delete')[0];
     }
@@ -163,7 +159,7 @@ class ObjectStorage
      *    ]
      * @return array An array containing all matching objects
      */
-    public function search($parameters)
+    public function search(array $parameters): array
     {
         return $this->executeCommand([$parameters], 'search')[0];
     }
@@ -175,7 +171,7 @@ class ObjectStorage
      * @param string $command The command name
      * @return mixed
      */
-    private function executeCommand($parameters, $command)
+    private function executeCommand(array $parameters, string $command)
     {
         foreach ($parameters as $index => $object) {
             $parameters[$index]['command'] = $command;
@@ -198,7 +194,7 @@ class ObjectStorage
      * @param string $key The key to check
      * @return boolean TRUE if the key is valid, FALSE otherwise
      */
-    public function isValidKey($key)
+    public function isValidKey($key): bool
     {
         if (!is_string($key) || strlen($key) === 0 || $key === '.' || $key === '..' || strpos($key, '/../') !== false || strpos($key, '/./') !== false || strpos($key, '/') === 0 || strpos($key, './') === 0 || strpos($key, '../') === 0 || substr($key, -2) === '/.' || substr($key, -3) === '/..' || substr($key, -1) === '/') {
             return false;
@@ -225,7 +221,7 @@ class ObjectStorage
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
-    public function execute($commands)
+    public function execute(array $commands): array
     {
         $filePointers = [];
         $filesToDelete = [];
@@ -911,7 +907,7 @@ class ObjectStorage
                         return $result;
                     };
                 } else {
-                    throw new \InvalidArgumentException('invalid command "' . $command . '" at item[' . $index . ']');
+                    throw new \InvalidArgumentException('Invalid command "' . $command . '" at item[' . $index . ']');
                 }
             }
         } catch (\Exception $e) {
@@ -958,7 +954,7 @@ class ObjectStorage
      * @param string $filename The filename
      * @return boolean TRUE if successful, FALSE otherwise
      */
-    private function createFileDirIfNotExists($filename)
+    private function createFileDirIfNotExists(string $filename): bool
     {
         $pathinfo = pathinfo($filename);
         if (isset($pathinfo['dirname']) && $pathinfo['dirname'] !== '.') {
@@ -978,7 +974,7 @@ class ObjectStorage
      * 
      * @param string $dir The directory name
      */
-    private function createDirIfNotExists($dir)
+    private function createDirIfNotExists(string $dir): bool
     {
         if (!is_dir($dir)) {
             try {
@@ -988,7 +984,7 @@ class ObjectStorage
                 });
                 $result = mkdir($dir, 0777, true);
                 restore_error_handler();
-                return $result;
+                return (bool) $result;
             } catch (\IvoPetkov\ObjectStorage\ErrorException $e) {
                 if ($e->getMessage() !== 'mkdir(): File exists') { // The directory may be just created in other process.
                     throw $e;
@@ -1005,7 +1001,7 @@ class ObjectStorage
      * @param boolean $recursive If TRUE all files in subdirectories will be returned too
      * @return array An array containing list of all files in the directory specified
      */
-    private function getFiles($dir, $recursive = false)
+    private function getFiles(string $dir, bool $recursive = false): array
     {
         $result = [];
         if (is_dir($dir)) {
