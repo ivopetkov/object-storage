@@ -932,6 +932,7 @@ class ObjectStorage
                 unlink($filename);
             }
         }
+        unset($emptyOpenedFiles);
 
         if ($thrownException === null) {
             foreach ($filesToDelete as $filename => $one) {
