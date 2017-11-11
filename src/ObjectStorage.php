@@ -15,7 +15,7 @@ class ObjectStorage
     /**
      * The current library version
      */
-    const VERSION = '0.3.0';
+    const VERSION = '0.3.1';
 
     /**
      * The directory where the objects will be stored
@@ -437,6 +437,7 @@ class ObjectStorage
                         $filePointer = fopen($filename, "r");
                         flock($filePointer, LOCK_SH);
                         $content = fread($filePointer, filesize($filename));
+                        flock($filePointer, LOCK_UN);
                         fclose($filePointer);
                         return $content;
                     }
@@ -689,6 +690,8 @@ class ObjectStorage
                     };
                 } elseif ($command === 'delete') {
                     $key = $getProperty('key', true);
+                    $prepareFileForWriting($this->objectsDir . $key);
+                    $prepareFileForWriting($this->metadataDir . $key);
                     $functions[$index] = function() use ($key, $deleteFile) {
                         $deleteFile($this->objectsDir . $key);
                         $deleteFile($this->metadataDir . $key);
@@ -923,6 +926,7 @@ class ObjectStorage
         }
 
         foreach ($filePointers as $filename => $filePointer) {
+            flock($filePointer, LOCK_UN);
             fclose($filePointer);
         }
         unset($filePointers);

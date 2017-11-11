@@ -47,4 +47,26 @@ class LocksTest extends ObjectStorageTestCase
         );
     }
 
+    /**
+     * 
+     */
+    public function testLockedKeys3()
+    {
+        $this->removeDataDir();
+        $objectStorage = new \IvoPetkov\ObjectStorage($this->getDataDir());
+        $objectStorage->set(
+                [
+                    'key' => 'lockeddata3',
+                    'body' => 'data'
+                ]
+        );
+        $this->lockFile('lockeddata3');
+        $this->setExpectedException('\IvoPetkov\ObjectStorage\ObjectLockedException');
+        $objectStorage->delete(
+                [
+                    'key' => 'lockeddata3',
+                ]
+        );
+    }
+
 }
