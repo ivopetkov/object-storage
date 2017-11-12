@@ -431,16 +431,15 @@ class ObjectStorage
                 return $content;
             } else {
                 if (is_file($filename)) {
-                    if (filesize($filename) === 0) {
-                        return '';
-                    } else {
-                        $filePointer = fopen($filename, "r");
-                        flock($filePointer, LOCK_SH);
-                        $content = fread($filePointer, filesize($filename));
-                        flock($filePointer, LOCK_UN);
-                        fclose($filePointer);
-                        return $content;
+                    $filePointer = fopen($filename, "r");
+                    flock($filePointer, LOCK_SH);
+                    $content = '';
+                    while (!feof($filePointer)) {
+                        $content .= fread($filePointer, 8192);
                     }
+                    flock($filePointer, LOCK_UN);
+                    fclose($filePointer);
+                    return $content;
                 }
                 return null;
             }
