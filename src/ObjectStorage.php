@@ -308,10 +308,10 @@ class ObjectStorage
                 return;
             }
             if (is_dir($filename)) {
-                throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable.');
+                throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable (dir with the same name exists).');
             }
             if ($this->createFileDirIfNotExists($filename) === false) {
-                throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable.');
+                throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable (cannot create dir).');
             }
             $getFilePointer = function() use ($filename, &$emptyOpenedFiles) {
                 clearstatcache(false, $filename);
@@ -372,7 +372,7 @@ class ObjectStorage
                     }
                 }
                 if (!$isParentDirReadable) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not readable.');
+                    throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not readable (parent dir is not readable).');
                 }
             }
         };
@@ -408,7 +408,7 @@ class ObjectStorage
                     unset($emptyOpenedFiles[$filename]);
                 }
             } else {
-                throw new \IvoPetkov\ObjectStorage\ErrorException('File ' . $filename . ' is not opened for writing!');
+                throw new \Exception('Internal error! File ' . $filename . ' is not opened for writing! Should not get here!');
             }
         };
 
@@ -639,11 +639,8 @@ class ObjectStorage
                         $prepareFileForWriting($this->objectsDir . $key);
                     }
                     if ($modifyMetadata && sizeof($metadata) === 1 && isset($metadata['*']) && $metadata['*'] === '') { // Check for setting empty metadata
-                        if (isset($filePointers[$this->metadataDir . $key])) { // Other command opened it and may change change it
-                        } else {
-                            if (!is_file($this->metadataDir . $key)) { // The file does not exist
-                                $modifyMetadata = false;
-                            }
+                        if (!isset($filePointers[$this->metadataDir . $key]) && !is_file($this->metadataDir . $key)) { // Not opened for writing and does not exists
+                            $modifyMetadata = false;
                         }
                     }
                     if ($modifyMetadata) {
@@ -689,11 +686,27 @@ class ObjectStorage
                     };
                 } elseif ($command === 'delete') {
                     $key = $getProperty('key', true);
-                    $prepareFileForWriting($this->objectsDir . $key);
-                    $prepareFileForWriting($this->metadataDir . $key);
-                    $functions[$index] = function() use ($key, $deleteFile) {
-                        $deleteFile($this->objectsDir . $key);
-                        $deleteFile($this->metadataDir . $key);
+                    $deleteObjectFile = true;
+                    if (!isset($filePointers[$this->objectsDir . $key]) && !is_file($this->objectsDir . $key)) { // Not opened for writing and does not exists
+                        $deleteObjectFile = false;
+                    }
+                    $deleteMetadataFile = true;
+                    if (!isset($filePointers[$this->metadataDir . $key]) && !is_file($this->metadataDir . $key)) { // Not opened for writing and does not exists
+                        $deleteMetadataFile = false;
+                    }
+                    if ($deleteObjectFile) {
+                        $prepareFileForWriting($this->objectsDir . $key);
+                    }
+                    if ($deleteMetadataFile) {
+                        $prepareFileForWriting($this->metadataDir . $key);
+                    }
+                    $functions[$index] = function() use ($key, $deleteObjectFile, $deleteMetadataFile, $deleteFile) {
+                        if ($deleteObjectFile) {
+                            $deleteFile($this->objectsDir . $key);
+                        }
+                        if ($deleteMetadataFile) {
+                            $deleteFile($this->metadataDir . $key);
+                        }
                         return true;
                     };
                 } elseif ($command === 'duplicate') {
@@ -702,7 +715,7 @@ class ObjectStorage
                     $prepareFileForReading($this->objectsDir . $sourceKey, true);
                     $prepareFileForReading($this->metadataDir . $sourceKey);
                     $prepareFileForWriting($this->objectsDir . $targetKey);
-                    $prepareFileForWriting($this->metadataDir . $targetKey); // todo optimize if source has metadata or current has metadata
+                    $prepareFileForWriting($this->metadataDir . $targetKey);
                     $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
                         if ($sourceBody === null) { // The source file is deleted in previous command
@@ -723,9 +736,9 @@ class ObjectStorage
                     $targetKey = $getProperty('targetKey', true);
                     $prepareFileForReading($this->objectsDir . $sourceKey, true);
                     $prepareFileForWriting($this->objectsDir . $sourceKey);
-                    $prepareFileForWriting($this->metadataDir . $sourceKey); // todo optimizations maybe???
+                    $prepareFileForWriting($this->metadataDir . $sourceKey);
                     $prepareFileForWriting($this->objectsDir . $targetKey);
-                    $prepareFileForWriting($this->metadataDir . $targetKey); // todo optimizations maybe???
+                    $prepareFileForWriting($this->metadataDir . $targetKey);
                     $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
                         if ($sourceBody === null) { // The source file is deleted in previous command

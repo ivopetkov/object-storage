@@ -641,6 +641,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     ]
                 ]
         );
+
         $this->assertTrue($result === array(
             0 => true,
             1 => true,
