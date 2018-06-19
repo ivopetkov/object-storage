@@ -15,7 +15,7 @@ class ObjectStorage
     /**
      * The current library version
      */
-    const VERSION = '0.3.1';
+    const VERSION = '0.3.3';
 
     /**
      * The directory where the objects will be stored
@@ -536,9 +536,6 @@ class ObjectStorage
                                 if (is_array($whereItem) && isset($whereItem[0], $whereItem[1]) && is_string($whereItem[0])) {
                                     $whereKey = $whereItem[0];
                                     $whereValue = $whereItem[1];
-                                    if (isset($result[$whereKey])) {
-                                        throw new \InvalidArgumentException('Where key ' . $whereKey . ' already set.');
-                                    }
                                     if ($whereKey !== 'key' && $whereKey !== 'body' && substr($whereKey, 0, 9) !== 'metadata.') {
                                         throw new \InvalidArgumentException('Invalid where key ' . $whereKey . '.');
                                     }
@@ -819,9 +816,8 @@ class ObjectStorage
 
                     $whereKeysPrepared = false;
                     if (isset($where['key'])) {
-                        $keysData = $where['key'];
                         $whereKeysPrepared = true;
-                        foreach ($keysData as $keyData) {
+                        foreach ($where['key'] as $keyData) {
                             if ($keyData[0] === '==' || $keyData[0] === 'equal') {
                                 $whereKeys[] = $keyData[1];
                             } elseif ($keyData[0] === 'startsWith' || $keyData[0] === 'startWith') {
