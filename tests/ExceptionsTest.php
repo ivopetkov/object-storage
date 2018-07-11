@@ -3,7 +3,7 @@
 /*
  * Object Storage
  * https://github.com/ivopetkov/object-storage
- * Copyright (c) 2016 Ivo Petkov
+ * Copyright (c) Ivo Petkov
  * Free to use under the MIT license.
  */
 
