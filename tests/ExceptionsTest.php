@@ -21,7 +21,7 @@ class ExceptionsTest extends ObjectStorageTestCase
         $this->removeDataDir();
         $dataDir = $this->getDataDir();
         $this->createFile($dataDir . '/objects', 'data');
-        $this->setExpectedException('\IvoPetkov\ObjectStorage\ErrorException');
+        $this->expectException('\IvoPetkov\ObjectStorage\ErrorException');
         $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
         $objectStorage->set(
                 [
@@ -38,7 +38,7 @@ class ExceptionsTest extends ObjectStorageTestCase
     {
         $this->removeDataDir();
         $dataDir = $this->getDataDir();
-        $this->setExpectedException('\IvoPetkov\ObjectStorage\ErrorException');
+        $this->expectException('\IvoPetkov\ObjectStorage\ErrorException');
         $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
         $objectStorage->rename(
                 [
