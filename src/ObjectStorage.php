@@ -15,7 +15,7 @@ class ObjectStorage
     /**
      * The current library version
      */
-    const VERSION = '0.3.3';
+    const VERSION = '0.3.5';
 
     /**
      * The directory where the objects will be stored
