@@ -38,26 +38,43 @@ class ObjectStorage
      * 
      * @var int 
      */
-    public $lockRetriesCount = 3;
+    private $lockRetriesCount = 3;
 
     /**
      * Time (in microseconds) between retries when waiting for locked objects.
      * 
      * @var int 
      */
-    public $lockRetryDelay = 500000;
+    private $lockRetryDelay = 500000;
 
     /**
      * Creates a new ObjectStorage instance.
      * 
      * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files).
+     * @param array $options List of options. Available values:
+     * - lockRetriesCount - Number of retries to make when waiting for locked (accessed by other scripts) objects.
+     * - lockRetryDelay - Time (in microseconds) between retries when waiting for locked objects.
      */
-    public function __construct(string $dir)
+    public function __construct(string $dir, array $options = [])
     {
         $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
         $this->objectsDir = $dir . 'objects' . DIRECTORY_SEPARATOR;
         $this->metadataDir = $dir . 'metadata' . DIRECTORY_SEPARATOR;
         $this->tempDir = $dir . 'temp' . DIRECTORY_SEPARATOR;
+
+        if (isset($options['lockRetriesCount'])) {
+            if (!is_int($options['lockRetriesCount'])) {
+                throw new InvalidArgumentException('The lockRetriesCount option must be of type int!');
+            }
+            $this->lockRetriesCount = $options['lockRetriesCount'];
+        }
+
+        if (isset($options['lockRetryDelay'])) {
+            if (!is_int($options['lockRetryDelay'])) {
+                throw new InvalidArgumentException('The lockRetryDelay option must be of type int!');
+            }
+            $this->lockRetriesCount = $options['lockRetryDelay'];
+        }
     }
 
     /**
