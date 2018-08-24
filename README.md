@@ -47,5 +47,8 @@ $result = $storage->get([
 ## License
 This project is licensed under the MIT License. See the [license file](https://github.com/ivopetkov/object-storage/blob/master/LICENSE) for more information.
 
+## Contributing
+Feel free to open new issues and contribute to the project. Let's make it awesome and let's do in a positive way.
+
 ## Author
 This library is created and maintained by [Ivo Petkov](https://github.com/ivopetkov/) ([ivopetkov.com](https://ivopetkov.com)).
