@@ -57,7 +57,7 @@ class ObjectStorage
      * 
      * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files).
      */
-    public function __construct(string $dir = 'data/')
+    public function __construct(string $dir)
     {
         $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
         $this->objectsDir = $dir . 'objects' . DIRECTORY_SEPARATOR;
