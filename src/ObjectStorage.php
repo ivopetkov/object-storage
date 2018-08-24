@@ -70,6 +70,8 @@ class ObjectStorage
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
      * @return array An array containing the result data if existent, empty array otherwise.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function get(array $parameters): array
     {
@@ -81,6 +83,8 @@ class ObjectStorage
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']. Specifying metadata.* will bulk remove/update all previous metadata.
      * @return void No value is returned.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function set(array $parameters): void
     {
@@ -92,6 +96,8 @@ class ObjectStorage
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1']
      * @return void No value is returned.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function append(array $parameters): void
     {
@@ -103,6 +109,8 @@ class ObjectStorage
      * 
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return void No value is returned.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function duplicate(array $parameters): void
     {
@@ -114,6 +122,8 @@ class ObjectStorage
      * 
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
      * @return void No value is returned.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function rename(array $parameters): void
     {
@@ -125,6 +135,8 @@ class ObjectStorage
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1']
      * @return void No value is returned.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function delete(array $parameters): void
     {
@@ -157,6 +169,8 @@ class ObjectStorage
      *        'result' => ['key', 'body', 'metadata.title']
      *    ]
      * @return array An array containing all matching objects.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     public function search(array $parameters): array
     {
@@ -169,6 +183,8 @@ class ObjectStorage
      * @param array $parameters The command parameters.
      * @param string $command The command name.
      * @return mixed
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
     private function executeCommand(array $parameters, string $command)
     {
