@@ -13,51 +13,50 @@ class ObjectStorage
 {
 
     /**
-     * The current library version
+     * The current library version.
      */
     const VERSION = '0.3.5';
 
     /**
-     * The directory where the objects will be stored
+     * The directory where the objects will be stored.
      * 
      * @var string 
      */
     public $objectsDir = null;
 
     /**
-     * The directory where the objects metadata will be stored
+     * The directory where the objects metadata will be stored.
      * 
      * @var string 
      */
     public $metadataDir = null;
 
     /**
-     * The directory where temp library data will be stored
+     * The directory where temp library data will be stored.
      * 
      * @var string 
      */
     public $tempDir = null;
 
     /**
-     * Number of retries to make when waiting for locked (accessed by other scripts) objects
+     * Number of retries to make when waiting for locked (accessed by other scripts) objects.
      * 
      * @var int 
      */
     public $lockRetriesCount = 3;
 
     /**
-     * Time (in microseconds) between retries when waiting for locked objects
+     * Time (in microseconds) between retries when waiting for locked objects.
      * 
      * @var int 
      */
-    public $lockRetryDelay = 500000; // microseconds
+    public $lockRetryDelay = 500000;
 
     /**
-     * Creates a new Object storage instance
+     * Creates a new ObjectStorage instance.
      * 
-     * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files)
+     * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files).
      */
-
     public function __construct(string $dir = 'data/')
     {
         $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
@@ -67,10 +66,10 @@ class ObjectStorage
     }
 
     /**
-     * Retrieves object data for a specified key
+     * Retrieves object data for a specified key.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
-     * @return array An array containing the result data if existent, empty array otherwise
+     * @return array An array containing the result data if existent, empty array otherwise.
      */
     public function get(array $parameters): array
     {
@@ -78,10 +77,10 @@ class ObjectStorage
     }
 
     /**
-     * Saves object data for a specified key
+     * Saves object data for a specified key.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']. Specifying metadata.* will bulk remove/update all previous metadata.
-     * @return void No value is returned
+     * @return void No value is returned.
      */
     public function set(array $parameters): void
     {
@@ -92,7 +91,7 @@ class ObjectStorage
      * Appends object data for a specified key. The object will be created if not existent.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1']
-     * @return void No value is returned
+     * @return void No value is returned.
      */
     public function append(array $parameters): void
     {
@@ -103,7 +102,7 @@ class ObjectStorage
      * Creates a copy of an object. It's metadata is copied too.
      * 
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
-     * @return void No value is returned
+     * @return void No value is returned.
      */
     public function duplicate(array $parameters): void
     {
@@ -111,10 +110,10 @@ class ObjectStorage
     }
 
     /**
-     * Renames an object
+     * Renames an object.
      * 
      * @param array $parameters Data in the following format: ['sourceKey' => 'example1', 'targetKey' => 'example2']
-     * @return void No value is returned
+     * @return void No value is returned.
      */
     public function rename(array $parameters): void
     {
@@ -122,10 +121,10 @@ class ObjectStorage
     }
 
     /**
-     * Deletes an object and it's metadata
+     * Deletes an object and it's metadata.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1']
-     * @return void No value is returned
+     * @return void No value is returned.
      */
     public function delete(array $parameters): void
     {
@@ -133,7 +132,7 @@ class ObjectStorage
     }
 
     /**
-     * Retrieves a list of all object matching the criteria specified
+     * Retrieves a list of all object matching the criteria specified.
      * 
      * @param array $parameters Data in the following format:
      *    // Finds objects by key 
@@ -157,7 +156,7 @@ class ObjectStorage
      *        ],
      *        'result' => ['key', 'body', 'metadata.title']
      *    ]
-     * @return array An array containing all matching objects
+     * @return array An array containing all matching objects.
      */
     public function search(array $parameters): array
     {
@@ -165,10 +164,10 @@ class ObjectStorage
     }
 
     /**
-     * Executes single command
+     * Executes single command.
      * 
-     * @param array $parameters The command parameters
-     * @param string $command The command name
+     * @param array $parameters The command parameters.
+     * @param string $command The command name.
      * @return mixed
      */
     private function executeCommand(array $parameters, string $command)
@@ -189,10 +188,10 @@ class ObjectStorage
     }
 
     /**
-     * Checks whether the key specified is valid
+     * Checks whether the key specified is valid.
      * 
-     * @param string $key The key to check
-     * @return boolean TRUE if the key is valid, FALSE otherwise
+     * @param string $key The key to check.
+     * @return boolean TRUE if the key is valid, FALSE otherwise.
      */
     public function isValidKey($key): bool
     {
@@ -203,7 +202,7 @@ class ObjectStorage
     }
 
     /**
-     * Executes list of commands
+     * Executes list of commands.
      * 
      * @param array $commands Array containing list of commands in the following format:
      *    [
@@ -216,7 +215,7 @@ class ObjectStorage
      *        'key' => 'example2',
      *        'body' => 'body2'
      *    ]
-     * @return array Array containing the results for the commands
+     * @return array Array containing the results for the commands.
      * @throws \InvalidArgumentException
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
@@ -962,10 +961,11 @@ class ObjectStorage
     }
 
     /**
-     * Creates the directory of the file specified
+     * Creates the directory of the file specified.
      * 
-     * @param string $filename The filename
-     * @return boolean TRUE if successful, FALSE otherwise
+     * @param string $filename The filename.
+     * @return boolean TRUE if successful, FALSE otherwise.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      */
     private function createFileDirIfNotExists(string $filename): bool
     {
@@ -983,9 +983,11 @@ class ObjectStorage
     }
 
     /**
-     * Creates a directory if not existent
+     * Creates a directory if not existent.
      * 
-     * @param string $dir The directory name
+     * @param string $dir The directory name.
+     * @return boolean TRUE if successful, FALSE otherwise.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
      */
     private function createDirIfNotExists(string $dir): bool
     {
@@ -1008,11 +1010,11 @@ class ObjectStorage
     }
 
     /**
-     * Returns list of files in the directory specified
+     * Returns list of files in the directory specified.
      * 
-     * @param string $dir The directory name
-     * @param boolean $recursive If TRUE all files in subdirectories will be returned too
-     * @return array An array containing list of all files in the directory specified
+     * @param string $dir The directory name.
+     * @param boolean $recursive If TRUE all files in subdirectories will be returned too.
+     * @return array An array containing list of all files in the directory specified.
      */
     private function getFiles(string $dir, bool $recursive = false): array
     {
