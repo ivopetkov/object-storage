@@ -17,21 +17,21 @@ class ObjectStorage
      * 
      * @var string 
      */
-    public $objectsDir = null;
+    private $objectsDir = null;
 
     /**
      * The directory where the objects metadata will be stored.
      * 
      * @var string 
      */
-    public $metadataDir = null;
+    private $metadataDir = null;
 
     /**
      * The directory where temp library data will be stored.
      * 
      * @var string 
      */
-    public $tempDir = null;
+    private $tempDir = null;
 
     /**
      * Number of retries to make when waiting for locked (accessed by other scripts) objects.
