@@ -6,3 +6,5 @@
 
 ### [IvoPetkov\ObjectStorage\ObjectLockedException](ivopetkov.objectstorage.objectlockedexception.class.md)
 
+### [IvoPetkov\ObjectStorage\ObjectNotFoundException](ivopetkov.objectstorage.objectnotfoundexception.class.md)
+

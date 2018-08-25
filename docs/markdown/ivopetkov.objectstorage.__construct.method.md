@@ -3,7 +3,7 @@
 Creates a new ObjectStorage instance.
 
 ```php
-public __construct ( [ string $dir = 'data/' ] )
+public __construct ( string $dir [, array $options = [] ] )
 ```
 
 ## Parameters
@@ -11,6 +11,10 @@ public __construct ( [ string $dir = 'data/' ] )
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$dir`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where the library will store data (the objects, the metadata and the temporary files).
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$options`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;List of options. Available values:
 
 ## Details
 

@@ -1,34 +1,8 @@
 # IvoPetkov\ObjectStorage
 
-## Constants
-
-##### const string VERSION
-
-## Properties
-
-##### public int $lockRetriesCount
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Number of retries to make when waiting for locked (accessed by other scripts) objects.
-
-##### public int $lockRetryDelay
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Time (in microseconds) between retries when waiting for locked objects.
-
-##### public string $metadataDir
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where the objects metadata will be stored.
-
-##### public string $objectsDir
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where the objects will be stored.
-
-##### public string $tempDir
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where temp library data will be stored.
-
 ## Methods
 
-##### public [__construct](ivopetkov.objectstorage.__construct.method.md) ( [ string $dir = 'data/' ] )
+##### public [__construct](ivopetkov.objectstorage.__construct.method.md) ( string $dir [, array $options = [] ] )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a new ObjectStorage instance.
 
@@ -48,7 +22,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes list of commands.
 
-##### public array [get](ivopetkov.objectstorage.get.method.md) ( array $parameters )
+##### public array|null [get](ivopetkov.objectstorage.get.method.md) ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves object data for a specified key.
 

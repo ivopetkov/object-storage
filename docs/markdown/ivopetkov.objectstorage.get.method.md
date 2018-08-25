@@ -3,7 +3,7 @@
 Retrieves object data for a specified key.
 
 ```php
-public array get ( array $parameters )
+public array|null get ( array $parameters )
 ```
 
 ## Parameters
@@ -14,7 +14,7 @@ public array get ( array $parameters )
 
 ## Returns
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An array containing the result data if existent, empty array otherwise.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An array containing the result data if existent, NULL otherwise.
 
 ## Details
 

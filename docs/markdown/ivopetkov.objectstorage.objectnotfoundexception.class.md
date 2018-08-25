@@ -1,4 +1,4 @@
-# IvoPetkov\ObjectStorage\ObjectLockedException
+# IvoPetkov\ObjectStorage\ObjectNotFoundException
 
 extends [IvoPetkov\ObjectStorage\ErrorException](ivopetkov.objectstorage.errorexception.class.md)
 
@@ -38,7 +38,7 @@ implements [Throwable](http://php.net/manual/en/class.throwable.php)
 
 ## Details
 
-File: /src/ObjectStorage/ObjectLockedException.php
+File: /src/ObjectStorage/ObjectNotFoundException.php
 
 ---
 
