@@ -698,7 +698,6 @@ class ObjectStorage
                                 $setFileContent($this->metadataDir . $key, $encodeMetaData($objectMetadata));
                             }
                         }
-                        return true;
                     };
                 } elseif ($command === 'append') {
                     $key = $getProperty('key', true);
@@ -706,7 +705,6 @@ class ObjectStorage
                     $prepareFileForWriting($this->objectsDir . $key);
                     $functions[$index] = function() use ($key, $body, $appendFileContent) {
                         $appendFileContent($this->objectsDir . $key, $body);
-                        return true;
                     };
                 } elseif ($command === 'delete') {
                     $key = $getProperty('key', true);
@@ -731,7 +729,6 @@ class ObjectStorage
                         if ($deleteMetadataFile) {
                             $deleteFile($this->metadataDir . $key);
                         }
-                        return true;
                     };
                 } elseif ($command === 'duplicate') {
                     $sourceKey = $getProperty('sourceKey', true);
@@ -742,9 +739,7 @@ class ObjectStorage
                     $prepareFileForWriting($this->metadataDir . $targetKey);
                     $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
-                        if ($sourceBody === null) { // The source file is deleted in previous command
-                            return false;
-                        } else {
+                        if ($sourceBody !== null) { // The source file is not deleted in previous command
                             $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
@@ -752,7 +747,6 @@ class ObjectStorage
                             } else {
                                 $setFileContent($this->metadataDir . $targetKey, $sourceMetadata);
                             }
-                            return true;
                         }
                     };
                 } elseif ($command === 'rename') {
@@ -765,9 +759,7 @@ class ObjectStorage
                     $prepareFileForWriting($this->metadataDir . $targetKey);
                     $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
-                        if ($sourceBody === null) { // The source file is deleted in previous command
-                            return false;
-                        } else {
+                        if ($sourceBody !== null) { // The source file is not deleted in previous command
                             $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
@@ -777,7 +769,6 @@ class ObjectStorage
                             }
                             $deleteFile($this->objectsDir . $sourceKey);
                             $deleteFile($this->metadataDir . $sourceKey);
-                            return true;
                         }
                     };
                 } elseif ($command === 'get') {
@@ -798,9 +789,7 @@ class ObjectStorage
 
                     $functions[$index] = function() use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $getFileContent, $decodeMetadata) {
                         $content = $getFileContent($this->objectsDir . $key);
-                        if ($content === null) {
-                            return null;
-                        } else {
+                        if ($content !== null) {
                             $objectResult = [];
                             if (array_search('key', $resultKeys) !== false) {
                                 $objectResult['key'] = $key;

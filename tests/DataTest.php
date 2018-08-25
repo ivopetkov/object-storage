@@ -643,41 +643,35 @@ objects/books/3000000000: book 3000000000 content in pdf format
         );
 
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 => true,
-            3 => true,
-            4 => true,
-            5 =>
-            array(
+            0 => null,
+            1 => null,
+            2 => null,
+            3 => null,
+            4 => null,
+            5 => array(
                 'key' => 'product-5',
                 'body' => 'product body 1',
             ),
-            6 => true,
-            7 =>
-            array(
-                0 =>
-                array(
+            6 => null,
+            7 => array(
+                0 => array(
                     'key' => 'product-5',
                     'body' => 'product body 2',
                     'metadata.ivo' => '2011',
                 ),
             ),
-            8 => true,
-            9 =>
-            array(
+            8 => null,
+            9 => array(
             ),
-            10 => true,
-            11 =>
-            array(
+            10 => null,
+            11 => array(
                 0 =>
                 array(
                     'key' => 'product-5',
                     'body' => 'product body 3',
                 ),
             ),
-            12 =>
-            array(
+            12 => array(
                 0 =>
                 array(
                     'key' => 'product-5',
@@ -689,8 +683,8 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     'body' => '[5][6]',
                 ),
             ),
-            13 => true,
-            14 => true,
+            13 => null,
+            14 => null,
         ));
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
@@ -1186,8 +1180,8 @@ objects/data1: body1'));
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
+            0 => null,
+            1 => null,
             2 => null
         ));
 
@@ -1227,9 +1221,9 @@ objects/data1: body1'));
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 => true,
+            0 => null,
+            1 => null,
+            2 => null,
             3 => array(
                 'key' => 'product-1',
                 'body' => 'product body 2',
@@ -1268,9 +1262,9 @@ objects/product-1: product body 2
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 => false
+            0 => null,
+            1 => null,
+            2 => null
         ));
 
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
@@ -1304,9 +1298,9 @@ objects/product-1: product body 2
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 => false
+            0 => null,
+            1 => null,
+            2 => null
         ));
 
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
@@ -1347,10 +1341,10 @@ objects/product-1: product body 2
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 => true,
-            3 => true,
+            0 => null,
+            1 => null,
+            2 => null,
+            3 => null,
         ));
 
         $this->assertTrue($this->checkState('dd8b80a39b4400501586f368aa8299de
@@ -1395,10 +1389,10 @@ objects/product-2b: product body 2'));
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 => true,
-            3 => true,
+            0 => null,
+            1 => null,
+            2 => null,
+            3 => null,
         ));
 
         $this->assertTrue($this->checkState('5e08ed302b17012d025d13faa4767a5d
@@ -1445,10 +1439,9 @@ objects/product-2b: product body 2'));
                 ]
         );
         $this->assertTrue($result === array(
-            0 => true,
-            1 => true,
-            2 =>
-            array(
+            0 => null,
+            1 => null,
+            2 => array(
                 0 =>
                 array(
                     'key' => 'product-2a',
