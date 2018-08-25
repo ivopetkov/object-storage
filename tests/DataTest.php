@@ -174,6 +174,13 @@ objects/books/3000000000: book 3000000000 content in pdf format
         $result = $objectStorage->get(
                 [
                     'key' => 'book-1449392776',
+                    'result' => []
+                ]
+        );
+        $this->assertTrue($result === []);
+        $result = $objectStorage->get(
+                [
+                    'key' => 'book-1449392776',
                     'result' => ['metadata.rating']
                 ]
         );
@@ -861,6 +868,14 @@ objects/emptydata:
         $this->assertTrue($result === array(
             'body' => '',
         ));
+
+        $result = $objectStorage->get(
+                [
+                    'key' => 'emptydata',
+                    'result' => []
+                ]
+        );
+        $this->assertTrue($result === []);
 
         $objectStorage->delete(
                 [
