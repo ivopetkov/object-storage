@@ -9,7 +9,7 @@
 
 namespace IvoPetkov\ObjectStorage;
 
-class ObjectNotFoundException extends \Exception
+class ObjectNotFoundException extends \IvoPetkov\ObjectStorage\ErrorException
 {
     
 }

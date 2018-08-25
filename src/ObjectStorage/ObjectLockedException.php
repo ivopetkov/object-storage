@@ -9,7 +9,7 @@
 
 namespace IvoPetkov\ObjectStorage;
 
-class ObjectLockedException extends \Exception
+class ObjectLockedException extends \IvoPetkov\ObjectStorage\ErrorException
 {
     
 }
