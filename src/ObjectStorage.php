@@ -305,7 +305,7 @@ class ObjectStorage
                     if (preg_match('/' . $conditionData[1] . '/', $value) === 0) {
                         return true;
                     }
-                } elseif ($conditionData[0] === 'startsWith' || $conditionData[0] === 'startWith') {
+                } elseif ($conditionData[0] === 'startWith') {
                     if (substr($value, 0, strlen($conditionData[1])) === $conditionData[1]) {
                         return true;
                     }
@@ -570,7 +570,7 @@ class ObjectStorage
                                         $result[$whereKey] = [];
                                     }
                                     $whereOperator = isset($whereItem[2]) ? $whereItem[2] : '==';
-                                    if (array_search($whereOperator, ['==', 'regexp', 'search', 'startsWith', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
+                                    if (array_search($whereOperator, ['==', 'regexp', 'search', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
                                         throw new \InvalidArgumentException('Invalid where operator ' . $whereOperator . '.');
                                     }
                                     if (is_string($whereValue)) {
@@ -847,7 +847,7 @@ class ObjectStorage
                         foreach ($where['key'] as $keyData) {
                             if ($keyData[0] === '==' || $keyData[0] === 'equal') {
                                 $whereKeys[] = $keyData[1];
-                            } elseif ($keyData[0] === 'startsWith' || $keyData[0] === 'startWith') {
+                            } elseif ($keyData[0] === 'startWith') {
                                 $position = strrpos($keyData[1], '/');
                                 if ($position !== false) {
                                     $dir = substr($keyData[1], 0, $position);
