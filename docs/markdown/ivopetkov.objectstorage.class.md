@@ -1,5 +1,7 @@
 # IvoPetkov\ObjectStorage
 
+Enables storing and manipulating data objects in the directory specified.
+
 ## Methods
 
 ##### public [__construct](ivopetkov.objectstorage.__construct.method.md) ( string $dir [, array $options = [] ] )

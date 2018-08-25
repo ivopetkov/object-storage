@@ -4,6 +4,8 @@ extends [IvoPetkov\ObjectStorage\ErrorException](ivopetkov.objectstorage.errorex
 
 implements [Throwable](http://php.net/manual/en/class.throwable.php)
 
+Exception that will be thrown when trying to use a non existent object.
+
 ## Properties
 
 ### Inherited from [ErrorException](http://php.net/manual/en/class.errorexception.php):

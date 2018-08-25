@@ -9,6 +9,9 @@
 
 namespace IvoPetkov;
 
+/**
+ * Enables storing and manipulating data objects in the directory specified.
+ */
 class ObjectStorage
 {
 
