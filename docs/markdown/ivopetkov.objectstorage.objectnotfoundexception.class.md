@@ -6,15 +6,27 @@ implements [Throwable](http://php.net/manual/en/class.throwable.php)
 
 ## Properties
 
-##### protected integer $code
+### Inherited from Exception:
 
-##### protected NULL $file
+##### protected int $code
 
-##### protected NULL $line
+##### protected  $file
+
+##### protected  $line
 
 ##### protected string $message
 
-##### protected integer $severity
+### Inherited from ErrorException:
+
+##### protected int $severity
+
+## Methods
+
+### Inherited from ErrorException:
+
+##### public [__construct](http://php.net/manual/en/errorexception.__construct.php) ( [  $message [,  $code [,  $severity [,  $filename [,  $lineno [,  $previous ]]]]]] )
+
+##### public final void [getSeverity](http://php.net/manual/en/errorexception.getseverity.php) ( void )
 
 ### Inherited from Exception:
 
@@ -31,10 +43,6 @@ implements [Throwable](http://php.net/manual/en/class.throwable.php)
 ##### public final void [getTrace](http://php.net/manual/en/exception.gettrace.php) ( void )
 
 ##### public final void [getTraceAsString](http://php.net/manual/en/exception.gettraceasstring.php) ( void )
-
-### Inherited from ErrorException:
-
-##### public final void [getSeverity](http://php.net/manual/en/errorexception.getseverity.php) ( void )
 
 ## Details
 
