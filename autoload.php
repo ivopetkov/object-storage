@@ -11,6 +11,7 @@ $classes = array(
     'IvoPetkov\ObjectStorage' => 'src/ObjectStorage.php',
     'IvoPetkov\ObjectStorage\ErrorException' => 'src/ObjectStorage/ErrorException.php',
     'IvoPetkov\ObjectStorage\ObjectLockedException' => 'src/ObjectStorage/ObjectLockedException.php',
+    'IvoPetkov\ObjectStorage\ObjectNotFoundException' => 'src/ObjectStorage/ObjectNotFoundException.php',
 );
 
 spl_autoload_register(function ($class) use ($classes) {

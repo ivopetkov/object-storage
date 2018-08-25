@@ -1243,29 +1243,30 @@ objects/product-1: product body 2
         $this->removeDataDir();
         $dataDir = $this->getDataDir();
         $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
-        $result = $objectStorage->execute(
-                [
+        $exceptionCaught = false;
+        try {
+            $objectStorage->execute(
                     [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1'
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-1'
-                    ],
-                    [
-                        'command' => 'rename',
-                        'sourceKey' => 'product-1',
-                        'targetKey' => 'product-2',
+                        [
+                            'command' => 'set',
+                            'key' => 'product-1',
+                            'body' => 'product body 1'
+                        ],
+                        [
+                            'command' => 'delete',
+                            'key' => 'product-1'
+                        ],
+                        [
+                            'command' => 'rename',
+                            'sourceKey' => 'product-1',
+                            'targetKey' => 'product-2',
+                        ]
                     ]
-                ]
-        );
-        $this->assertTrue($result === array(
-            0 => null,
-            1 => null,
-            2 => null
-        ));
+            );
+        } catch (\IvoPetkov\ObjectStorage\ObjectNotFoundException $e) {
+            $exceptionCaught = true;
+        }
+        $this->assertTrue($exceptionCaught);
 
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
@@ -1279,29 +1280,29 @@ objects/product-1: product body 2
         $this->removeDataDir();
         $dataDir = $this->getDataDir();
         $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
-        $result = $objectStorage->execute(
-                [
+        try {
+            $objectStorage->execute(
                     [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1'
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-1'
-                    ],
-                    [
-                        'command' => 'duplicate',
-                        'sourceKey' => 'product-1',
-                        'targetKey' => 'product-2',
+                        [
+                            'command' => 'set',
+                            'key' => 'product-1',
+                            'body' => 'product body 1'
+                        ],
+                        [
+                            'command' => 'delete',
+                            'key' => 'product-1'
+                        ],
+                        [
+                            'command' => 'duplicate',
+                            'sourceKey' => 'product-1',
+                            'targetKey' => 'product-2',
+                        ]
                     ]
-                ]
-        );
-        $this->assertTrue($result === array(
-            0 => null,
-            1 => null,
-            2 => null
-        ));
+            );
+        } catch (\IvoPetkov\ObjectStorage\ObjectNotFoundException $e) {
+            $exceptionCaught = true;
+        }
+        $this->assertTrue($exceptionCaught);
 
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));

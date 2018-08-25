@@ -123,6 +123,7 @@ class ObjectStorage
      * @return void No value is returned.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
+     * @throws \IvoPetkov\ObjectStorage\ObjectNotFoundException
      */
     public function duplicate(array $parameters): void
     {
@@ -136,6 +137,7 @@ class ObjectStorage
      * @return void No value is returned.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
+     * @throws \IvoPetkov\ObjectStorage\ObjectNotFoundException
      */
     public function rename(array $parameters): void
     {
@@ -384,7 +386,7 @@ class ObjectStorage
                 }
             } else {
                 if ($required) {
-                    throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' does not exist.');
+                    throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The file ' . $filename . ' does not exist.');
                 }
                 $rootDir = dirname($filename, 100);
                 $isParentDirReadable = false;
@@ -739,7 +741,9 @@ class ObjectStorage
                     $prepareFileForWriting($this->metadataDir . $targetKey);
                     $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
-                        if ($sourceBody !== null) { // The source file is not deleted in previous command
+                        if ($sourceBody === null) { // The source file is deleted in previous command
+                            throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The source object (' . $sourceKey . ') does not exists!');
+                        } else {
                             $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
@@ -759,7 +763,9 @@ class ObjectStorage
                     $prepareFileForWriting($this->metadataDir . $targetKey);
                     $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
-                        if ($sourceBody !== null) { // The source file is not deleted in previous command
+                        if ($sourceBody === null) { // The source file is deleted in previous command
+                            throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The source object (' . $sourceKey . ') does not exists!');
+                        } else {
                             $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
