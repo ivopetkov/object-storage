@@ -3,7 +3,7 @@
 Checks whether the key specified is valid.
 
 ```php
-public boolean isValidKey ( string $key )
+public bool isValidKey ( string $key )
 ```
 
 ## Parameters

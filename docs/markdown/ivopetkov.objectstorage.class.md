@@ -26,7 +26,7 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves object data for a specified key.
 
-##### public boolean [isValidKey](ivopetkov.objectstorage.isvalidkey.method.md) ( string $key )
+##### public bool [isValidKey](ivopetkov.objectstorage.isvalidkey.method.md) ( string $key )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Checks whether the key specified is valid.
 
