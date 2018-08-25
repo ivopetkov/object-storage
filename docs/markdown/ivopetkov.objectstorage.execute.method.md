@@ -11,6 +11,16 @@ public array execute ( array $commands )
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$commands`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Array containing list of commands in the following format:
+[
+'command' => 'set',
+'key' => 'example1',
+'body' => 'body1'
+],
+[
+'command' => 'append',
+'key' => 'example2',
+'body' => 'body2'
+]
 
 ## Returns
 

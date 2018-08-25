@@ -15,6 +15,8 @@ public __construct ( string $dir [, array $options = [] ] )
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$options`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;List of options. Available values:
+- lockRetriesCount - Number of retries to make when waiting for locked (accessed by other scripts) objects.
+- lockRetryDelay - Time (in microseconds) between retries when waiting for locked objects.
 
 ## Details
 
