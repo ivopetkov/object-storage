@@ -10,7 +10,7 @@
 
 ### [IvoPetkov\ObjectStorage\ObjectLockedException](ivopetkov.objectstorage.objectlockedexception.class.md)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exception that will be thrown when the library error occurs.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exception that will be thrown when trying to modify and object that is used by other process.
 
 ### [IvoPetkov\ObjectStorage\ObjectNotFoundException](ivopetkov.objectstorage.objectnotfoundexception.class.md)
 

@@ -4,7 +4,7 @@ extends [IvoPetkov\ObjectStorage\ErrorException](ivopetkov.objectstorage.errorex
 
 implements [Throwable](http://php.net/manual/en/class.throwable.php)
 
-Exception that will be thrown when the library error occurs.
+Exception that will be thrown when trying to modify and object that is used by other process.
 
 ## Properties
 

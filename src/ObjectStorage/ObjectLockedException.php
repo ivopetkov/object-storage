@@ -10,7 +10,7 @@
 namespace IvoPetkov\ObjectStorage;
 
 /**
- * Exception that will be thrown when the library error occurs.
+ * Exception that will be thrown when trying to modify and object that is used by other process.
  */
 class ObjectLockedException extends \IvoPetkov\ObjectStorage\ErrorException
 {
