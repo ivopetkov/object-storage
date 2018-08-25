@@ -16,7 +16,7 @@ composer require ivopetkov/object-storage
 
 ## Documentation
 
-Full [documentation](https://github.com/ivopetkov/object-storage/blob/master/docs/markdown/index.md) is avaiable as part of this repository.
+Full [documentation](https://github.com/ivopetkov/object-storage/blob/master/docs/markdown/index.md) is available as part of this repository.
 
 ## Example
 
