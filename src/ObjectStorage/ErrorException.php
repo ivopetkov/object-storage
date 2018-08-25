@@ -10,7 +10,7 @@
 namespace IvoPetkov\ObjectStorage;
 
 /**
- * Exception that will be thrown when the library error occurs.
+ * Exception that will be thrown when a library error occurs.
  */
 class ErrorException extends \ErrorException
 {

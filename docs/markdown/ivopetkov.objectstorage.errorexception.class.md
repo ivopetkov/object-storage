@@ -4,7 +4,7 @@ extends [ErrorException](http://php.net/manual/en/class.errorexception.php)
 
 implements [Throwable](http://php.net/manual/en/class.throwable.php)
 
-Exception that will be thrown when the library error occurs.
+Exception that will be thrown when a library error occurs.
 
 ## Properties
 
