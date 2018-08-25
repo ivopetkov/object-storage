@@ -81,11 +81,11 @@ class ObjectStorage
      * Retrieves object data for a specified key.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
-     * @return array An array containing the result data if existent, empty array otherwise.
+     * @return array|null An array containing the result data if existent, NULL otherwise.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
      */
-    public function get(array $parameters): array
+    public function get(array $parameters): ?array
     {
         return $this->executeCommand([$parameters], 'get')[0];
     }
@@ -799,7 +799,7 @@ class ObjectStorage
                     $functions[$index] = function() use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $getFileContent, $decodeMetadata) {
                         $content = $getFileContent($this->objectsDir . $key);
                         if ($content === null) {
-                            return [];
+                            return null;
                         } else {
                             $objectResult = [];
                             if (array_search('key', $resultKeys) !== false) {

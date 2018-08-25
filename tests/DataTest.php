@@ -778,7 +778,7 @@ objects/prefix2/datac: C
         $result = $objectStorage->search(
                 [
                     'where' => [
-                        ['key', 'prefix1/', 'startsWith']
+                        ['key', 'prefix1/', 'startWith']
                     ],
                     'result' => ['key', 'body']
                 ]
@@ -881,7 +881,7 @@ objects/emptydata:
                     'result' => ['body']
                 ]
         );
-        $this->assertTrue($result === array());
+        $this->assertTrue($result === null);
     }
 
     /**
@@ -1188,9 +1188,7 @@ objects/data1: body1'));
         $this->assertTrue($result === array(
             0 => true,
             1 => true,
-            2 =>
-            array(
-            )
+            2 => null
         ));
 
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
@@ -1232,8 +1230,7 @@ objects/data1: body1'));
             0 => true,
             1 => true,
             2 => true,
-            3 =>
-            array(
+            3 => array(
                 'key' => 'product-1',
                 'body' => 'product body 2',
             ),

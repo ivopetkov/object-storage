@@ -84,7 +84,7 @@ objects/data1: data
             'result' => ['key', 'body']
         ]);
 
-        $this->assertTrue($result === []);
+        $this->assertTrue($result === null);
 
         $this->assertTrue($this->checkState('3fb020a8835e135fb296ad20b43ba773
 objects/data1/key1: content
