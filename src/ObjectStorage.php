@@ -30,13 +30,6 @@ class ObjectStorage
     private $metadataDir = null;
 
     /**
-     * The directory where temp library data will be stored.
-     * 
-     * @var string 
-     */
-    private $tempDir = null;
-
-    /**
      * Number of retries to make when waiting for locked (accessed by other scripts) objects.
      * 
      * @var int 
@@ -63,7 +56,6 @@ class ObjectStorage
         $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
         $this->objectsDir = $dir . 'objects' . DIRECTORY_SEPARATOR;
         $this->metadataDir = $dir . 'metadata' . DIRECTORY_SEPARATOR;
-        $this->tempDir = $dir . 'temp' . DIRECTORY_SEPARATOR;
 
         if (isset($options['lockRetriesCount'])) {
             if (!is_int($options['lockRetriesCount'])) {
