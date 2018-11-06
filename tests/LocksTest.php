@@ -18,10 +18,9 @@ class LocksTest extends ObjectStorageTestCase
      */
     public function testLockedKeys1()
     {
-        $this->removeDataDir();
-        $this->lockFile('lockeddata1');
+        $this->lockObject('lockeddata1');
         $this->expectException('\IvoPetkov\ObjectStorage\ObjectLockedException');
-        $objectStorage = new \IvoPetkov\ObjectStorage($this->getDataDir());
+        $objectStorage = $this->getInstance();
         $objectStorage->set(
                 [
                     'key' => 'lockeddata1',
@@ -35,10 +34,9 @@ class LocksTest extends ObjectStorageTestCase
      */
     public function testLockedKeys2()
     {
-        $this->removeDataDir();
-        $this->lockFile('lockeddata2');
+        $this->lockObject('lockeddata2');
         $this->expectException('\IvoPetkov\ObjectStorage\ObjectLockedException');
-        $objectStorage = new \IvoPetkov\ObjectStorage($this->getDataDir());
+        $objectStorage = $this->getInstance();
         $objectStorage->set(
                 [
                     'key' => 'lockeddata2',
@@ -52,15 +50,14 @@ class LocksTest extends ObjectStorageTestCase
      */
     public function testLockedKeys3()
     {
-        $this->removeDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($this->getDataDir());
+        $objectStorage = $this->getInstance();
         $objectStorage->set(
                 [
                     'key' => 'lockeddata3',
                     'body' => 'data'
                 ]
         );
-        $this->lockFile('lockeddata3');
+        $this->lockObject('lockeddata3');
         $this->expectException('\IvoPetkov\ObjectStorage\ObjectLockedException');
         $objectStorage->delete(
                 [

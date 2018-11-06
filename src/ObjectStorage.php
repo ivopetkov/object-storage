@@ -46,27 +46,28 @@ class ObjectStorage
     /**
      * Creates a new ObjectStorage instance.
      * 
-     * @param string $dir The directory where the library will store data (the objects, the metadata and the temporary files).
+     * @param string $objectsDir The directory where the library will store the objects.
+     * @param string $metadataDir The directory where the library will store the objects metadata.
      * @param array $options List of options. Available values:
      * - lockRetriesCount - Number of retries to make when waiting for locked (accessed by other scripts) objects.
      * - lockRetryDelay - Time (in microseconds) between retries when waiting for locked objects.
+     * @throws \InvalidArgumentException
      */
-    public function __construct(string $dir, array $options = [])
+    public function __construct(string $objectsDir, string $metadataDir, array $options = [])
     {
-        $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
-        $this->objectsDir = $dir . 'objects' . DIRECTORY_SEPARATOR;
-        $this->metadataDir = $dir . 'metadata' . DIRECTORY_SEPARATOR;
+        $this->objectsDir = rtrim($objectsDir, '/\\') . '/';
+        $this->metadataDir = rtrim($metadataDir, '/\\') . '/';
 
         if (isset($options['lockRetriesCount'])) {
             if (!is_int($options['lockRetriesCount'])) {
-                throw new InvalidArgumentException('The lockRetriesCount option must be of type int!');
+                throw new \InvalidArgumentException('The lockRetriesCount option must be of type int!');
             }
             $this->lockRetriesCount = $options['lockRetriesCount'];
         }
 
         if (isset($options['lockRetryDelay'])) {
             if (!is_int($options['lockRetryDelay'])) {
-                throw new InvalidArgumentException('The lockRetryDelay option must be of type int!');
+                throw new \InvalidArgumentException('The lockRetryDelay option must be of type int!');
             }
             $this->lockRetriesCount = $options['lockRetryDelay'];
         }

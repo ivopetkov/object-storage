@@ -10,40 +10,46 @@
 class ObjectStorageTestCase extends PHPUnit\Framework\TestCase
 {
 
+    /**
+     *
+     * @var array 
+     */
     private $lockedFiles = [];
 
-    public function emptyDir($dir)
-    {
-        $dataFiles = $this->getFilesInDir($dir);
-        foreach ($dataFiles as $file) {
-            if (is_file($dir . $file)) {
-                unlink($dir . $file);
-            } elseif (is_dir($dir . $file)) {
-                rmdir($dir . $file);
-            }
-        }
-    }
+    /**
+     *
+     * @var string 
+     */
+    private $dataDir = null;
 
-    public function removeDir($dir)
-    {
-        $this->emptyDir($dir);
-        if (is_dir($dir)) {
-            rmdir($dir);
-        }
-    }
-
-    public function checkState($expectedState)
+    /**
+     * 
+     * @param string $expectedState
+     * @return bool
+     */
+    public function checkState(string $expectedState): bool
     {
         $md5 = substr($expectedState, 0, 32);
         return $md5 !== md5($this->getState());
     }
 
-    public function getDataDir()
+    /**
+     * 
+     * @return string
+     */
+    public function getDataDir(): string
     {
-        return sys_get_temp_dir() . '/object-storage-tests/data/';
+        if ($this->dataDir === null) {
+            $this->dataDir = sys_get_temp_dir() . '/object-storage-tests/' . uniqid() . '/';
+        }
+        return $this->dataDir;
     }
 
-    public function getState()
+    /**
+     * 
+     * @return string
+     */
+    public function getState(): string
     {
         $dir = $this->getDataDir();
         $files = $this->getFilesInDir($dir);
@@ -57,17 +63,22 @@ class ObjectStorageTestCase extends PHPUnit\Framework\TestCase
         return md5($result) . "\n" . $result;
     }
 
-    public function removeDataDir()
+    /**
+     * 
+     * @return \IvoPetkov\ObjectStorage
+     */
+    public function getInstance(): \IvoPetkov\ObjectStorage
     {
-        $this->removeDir($this->getDataDir());
+        $dataDir = $this->getDataDir();
+        return new \IvoPetkov\ObjectStorage($dataDir . 'objects/', $dataDir . 'metadata/');
     }
 
-    public function getInstance()
-    {
-        return new \IvoPetkov\ObjectStorage($this->getDataDir());
-    }
-
-    public function getFilesInDir($dir)
+    /**
+     * 
+     * @param string $dir
+     * @return array
+     */
+    public function getFilesInDir(string $dir): array
     {
         $result = [];
         if (is_dir($dir)) {
@@ -93,7 +104,13 @@ class ObjectStorageTestCase extends PHPUnit\Framework\TestCase
         return $result;
     }
 
-    function createFile($filename, $content)
+    /**
+     * 
+     * @param string $filename
+     * @param string $content
+     * @return void
+     */
+    function createFile(string $filename, string $content): void
     {
         $pathinfo = pathinfo($filename);
         if (isset($pathinfo['dirname']) && $pathinfo['dirname'] !== '.') {
@@ -104,13 +121,18 @@ class ObjectStorageTestCase extends PHPUnit\Framework\TestCase
         file_put_contents($filename, $content);
     }
 
-    public function lockFile($key)
+    /**
+     * 
+     * @param string $key
+     * @return void
+     */
+    public function lockObject(string $key): void
     {
         $dir = $this->getDataDir() . 'objects';
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
-        $filename = realpath($dir) . DIRECTORY_SEPARATOR . $key;
+        $filename = realpath($dir) . '/' . $key;
         $index = sizeof($this->lockedFiles);
         $this->lockedFiles[$index] = fopen($filename, "c+");
         flock($this->lockedFiles[$index], LOCK_EX | LOCK_NB);

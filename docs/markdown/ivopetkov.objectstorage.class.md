@@ -4,7 +4,7 @@ Enables storing and manipulating data objects in the directory specified.
 
 ## Methods
 
-##### public [__construct](ivopetkov.objectstorage.__construct.method.md) ( string $dir [, array $options = [] ] )
+##### public [__construct](ivopetkov.objectstorage.__construct.method.md) ( string $objectsDir , string $metadataDir [, array $options = [] ] )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Creates a new ObjectStorage instance.
 
@@ -24,13 +24,19 @@ Enables storing and manipulating data objects in the directory specified.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Executes list of commands.
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: Array containing the results for the commands.
+
 ##### public array|null [get](ivopetkov.objectstorage.get.method.md) ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves object data for a specified key.
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: An array containing the result data if existent, NULL otherwise.
+
 ##### public bool [isValidKey](ivopetkov.objectstorage.isvalidkey.method.md) ( string $key )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Checks whether the key specified is valid.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: TRUE if the key is valid, FALSE otherwise.
 
 ##### public void [rename](ivopetkov.objectstorage.rename.method.md) ( array $parameters )
 
@@ -39,6 +45,8 @@ Enables storing and manipulating data objects in the directory specified.
 ##### public array [search](ivopetkov.objectstorage.search.method.md) ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves a list of all object matching the criteria specified.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: An array containing all matching objects.
 
 ##### public void [set](ivopetkov.objectstorage.set.method.md) ( array $parameters )
 

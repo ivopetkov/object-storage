@@ -18,8 +18,6 @@ class KeyCollisionTest extends ObjectStorageTestCase
      */
     public function testFileWhenThereIsDirWithTheSameKey()
     {
-        $this->removeDataDir();
-
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
@@ -46,8 +44,6 @@ objects/data1/data2: data
      */
     public function testDirWhenThereIsFileWithTheSameKey()
     {
-        $this->removeDataDir();
-
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
@@ -74,8 +70,6 @@ objects/data1: data
      */
     public function testGetKeyWhenItsDir()
     {
-        $this->removeDataDir();
-
         $objectStorage = $this->getInstance();
 
         $this->createFile($this->getDataDir() . '/objects/data1/key1', 'content');
@@ -96,8 +90,6 @@ objects/data1/key1: content
      */
     public function testDeleteKeyWhenItsDir()
     {
-        $this->removeDataDir();
-
         $objectStorage = $this->getInstance();
 
         $this->createFile($this->getDataDir() . '/objects/data1/key1', 'content');

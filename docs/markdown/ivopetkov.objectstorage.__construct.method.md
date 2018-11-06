@@ -3,14 +3,18 @@
 Creates a new ObjectStorage instance.
 
 ```php
-public __construct ( string $dir [, array $options = [] ] )
+public __construct ( string $objectsDir , string $metadataDir [, array $options = [] ] )
 ```
 
 ## Parameters
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$dir`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$objectsDir`
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where the library will store data (the objects, the metadata and the temporary files).
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where the library will store the objects.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$metadataDir`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The directory where the library will store the objects metadata.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$options`
 

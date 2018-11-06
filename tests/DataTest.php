@@ -18,7 +18,6 @@ class DataTest extends ObjectStorageTestCase
      */
     public function testDataState1()
     {
-        $this->removeDataDir();
         $objectStorage = $this->getInstance();
 
         // Create initial data
@@ -846,7 +845,6 @@ objects/prefix2/datac: C
      */
     public function testEmptyData()
     {
-        $this->removeDataDir();
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
@@ -898,7 +896,6 @@ objects/emptydata:
      */
     public function testBreakMetadata()
     {
-        $this->removeDataDir();
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
@@ -937,7 +934,6 @@ objects/key1: body1
      */
     public function testRemoveOldMetadata()
     {
-        $this->removeDataDir();
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
@@ -992,7 +988,6 @@ objects/data1: body1'));
      */
     public function testWhereOperators()
     {
-        $this->removeDataDir();
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
@@ -1173,9 +1168,7 @@ objects/data1: body1'));
      */
     public function testDeleteAfterSet()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
                 [
                     [
@@ -1209,9 +1202,7 @@ objects/data1: body1'));
      */
     public function testAppendAfterDelete()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
                 [
                     [
@@ -1255,9 +1246,7 @@ objects/product-1: product body 2
      */
     public function testRenameAfterDelete()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $exceptionCaught = false;
         try {
             $objectStorage->execute(
@@ -1292,9 +1281,7 @@ objects/product-1: product body 2
      */
     public function testDuplicateAfterDelete()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         try {
             $objectStorage->execute(
                     [
@@ -1328,9 +1315,7 @@ objects/product-1: product body 2
      */
     public function testRename()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
                 [
                     [
@@ -1376,9 +1361,7 @@ objects/product-2b: product body 2'));
      */
     public function testDuplicate()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
                 [
                     [
@@ -1429,9 +1412,7 @@ objects/product-2b: product body 2'));
      */
     public function testSearchBody()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
                 [
                     [
@@ -1479,9 +1460,7 @@ objects/product-2a: product body 2'));
      */
     public function testClearMetadata()
     {
-        $this->removeDataDir();
-        $dataDir = $this->getDataDir();
-        $objectStorage = new \IvoPetkov\ObjectStorage($dataDir);
+        $objectStorage = $this->getInstance();
         $objectStorage->execute(
                 [
                     [
@@ -1501,7 +1480,7 @@ objects/product-2a: product body 2'));
 objects/product-1: product body 1
 '));
 
-        $this->removeDataDir();
+
         $objectStorage->execute(
                 [
                     [
