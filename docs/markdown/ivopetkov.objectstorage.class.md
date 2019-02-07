@@ -32,12 +32,6 @@ Enables storing and manipulating data objects in the directory specified.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: An array containing the result data if existent, NULL otherwise.
 
-##### public bool [isValidKey](ivopetkov.objectstorage.isvalidkey.method.md) ( string $key )
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Checks whether the key specified is valid.
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: TRUE if the key is valid, FALSE otherwise.
-
 ##### public void [rename](ivopetkov.objectstorage.rename.method.md) ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Renames an object.
@@ -51,6 +45,12 @@ Enables storing and manipulating data objects in the directory specified.
 ##### public void [set](ivopetkov.objectstorage.set.method.md) ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Saves object data for a specified key.
+
+##### public bool [validate](ivopetkov.objectstorage.validate.method.md) ( string $key )
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Checks whether the key specified is valid.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: TRUE if the key is valid, FALSE otherwise.
 
 ## Details
 

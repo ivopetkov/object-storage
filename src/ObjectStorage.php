@@ -219,7 +219,7 @@ class ObjectStorage
      * @param string $key The key to check.
      * @return boolean TRUE if the key is valid, FALSE otherwise.
      */
-    public function isValidKey($key): bool
+    public function validate($key): bool
     {
         if (!is_string($key) || strlen($key) === 0 || $key === '.' || $key === '..' || strpos($key, '/../') !== false || strpos($key, '/./') !== false || strpos($key, '/') === 0 || strpos($key, './') === 0 || strpos($key, '../') === 0 || substr($key, -2) === '/.' || substr($key, -3) === '/..' || substr($key, -1) === '/') {
             return false;
@@ -505,7 +505,7 @@ class ObjectStorage
                             if (!is_string($commandData['key'])) {
                                 throw new \InvalidArgumentException('The key property must be of type string for item[' . $index . ']');
                             }
-                            if (!$this->isValidKey($commandData['key'])) {
+                            if (!$this->validate($commandData['key'])) {
                                 throw new \InvalidArgumentException('The key property is not valid for item[' . $index . ']');
                             }
                             return $commandData['key'];
@@ -522,7 +522,7 @@ class ObjectStorage
                             if (!is_string($commandData['sourceKey'])) {
                                 throw new \InvalidArgumentException('The sourceKey property must be of type string for item[' . $index . ']');
                             }
-                            if (!$this->isValidKey($commandData['sourceKey'])) {
+                            if (!$this->validate($commandData['sourceKey'])) {
                                 throw new \InvalidArgumentException('The sourceKey property is not valid for item[' . $index . ']');
                             }
                             return $commandData['sourceKey'];
@@ -532,7 +532,7 @@ class ObjectStorage
                             if (!is_string($commandData['targetKey'])) {
                                 throw new \InvalidArgumentException('The targetKey property must be of type string for item[' . $index . ']');
                             }
-                            if (!$this->isValidKey($commandData['targetKey'])) {
+                            if (!$this->validate($commandData['targetKey'])) {
                                 throw new \InvalidArgumentException('The targetKey property is not valid for item[' . $index . ']');
                             }
                             return $commandData['targetKey'];
@@ -599,7 +599,7 @@ class ObjectStorage
                                 foreach ($result['key'] as $whereKeyData) {
                                     $whereOperator = $whereKeyData[0];
                                     if ($whereOperator === '==' || $whereOperator === 'equal') {
-                                        if (!$this->isValidKey($whereKeyData[1])) {
+                                        if (!$this->validate($whereKeyData[1])) {
                                             throw new \InvalidArgumentException('The key value in where data is not valid.');
                                         }
                                     }

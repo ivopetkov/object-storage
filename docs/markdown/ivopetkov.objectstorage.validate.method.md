@@ -1,9 +1,9 @@
-# IvoPetkov\ObjectStorage::isValidKey
+# IvoPetkov\ObjectStorage::validate
 
 Checks whether the key specified is valid.
 
 ```php
-public bool isValidKey ( string $key )
+public bool validate ( string $key )
 ```
 
 ## Parameters
