@@ -69,7 +69,7 @@ class ObjectStorage
             if (!is_int($options['lockRetryDelay'])) {
                 throw new \InvalidArgumentException('The lockRetryDelay option must be of type int!');
             }
-            $this->lockRetriesCount = $options['lockRetryDelay'];
+            $this->lockRetryDelay = $options['lockRetryDelay'];
         }
     }
 
