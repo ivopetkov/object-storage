@@ -1458,6 +1458,160 @@ objects/product-2a: product body 2'));
     /**
      * 
      */
+    public function testSearchLimit()
+    {
+        $objectStorage = $this->getInstance();
+        $result = $objectStorage->execute(
+                [
+                    [
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'product-2',
+                        'body' => 'product body 2'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'services/service-1',
+                        'body' => 'service body 1'
+                    ],
+                    [
+                        'command' => 'set',
+                        'key' => 'services/service-2',
+                        'body' => 'service body 2'
+                    ],
+                    [
+                        'command' => 'search',
+                        'result' => ['key'],
+                        'limit' => 0
+                    ],
+                    [
+                        'command' => 'search',
+                        'result' => ['key'],
+                        'limit' => 1
+                    ],
+                    [
+                        'command' => 'search',
+                        'result' => ['key'],
+                        'limit' => 3
+                    ],
+                    [
+                        'command' => 'search',
+                        'result' => ['key'],
+                        'limit' => 5
+                    ],
+                    [
+                        'command' => 'search',
+                        'where' => [
+                            ['key', 'services/', 'startWith']
+                        ],
+                        'result' => ['key'],
+                        'limit' => 0
+                    ],
+                    [
+                        'command' => 'search',
+                        'where' => [
+                            ['key', 'services/', 'startWith']
+                        ],
+                        'result' => ['key'],
+                        'limit' => 1
+                    ],
+                    [
+                        'command' => 'search',
+                        'where' => [
+                            ['key', 'services/', 'startWith']
+                        ],
+                        'result' => ['key'],
+                        'limit' => 3
+                    ]
+                ]
+        );
+
+        $this->assertTrue($result === array(
+            0 => null,
+            1 => null,
+            2 => null,
+            3 => null,
+            4 =>
+            array(
+            ),
+            5 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'product-1',
+                ),
+            ),
+            6 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'product-1',
+                ),
+                1 =>
+                array(
+                    'key' => 'product-2',
+                ),
+                2 =>
+                array(
+                    'key' => 'services/service-1',
+                ),
+            ),
+            7 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'product-1',
+                ),
+                1 =>
+                array(
+                    'key' => 'product-2',
+                ),
+                2 =>
+                array(
+                    'key' => 'services/service-1',
+                ),
+                3 =>
+                array(
+                    'key' => 'services/service-2',
+                ),
+            ),
+            8 =>
+            array(
+            ),
+            9 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'services/service-1',
+                ),
+            ),
+            10 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'services/service-1',
+                ),
+                1 =>
+                array(
+                    'key' => 'services/service-2',
+                ),
+            ),
+        ));
+
+        $this->assertTrue($this->checkState('216bdc8b247a34135dd08e9172e6a6f2
+objects/product-1: product body 1
+objects/product-2: product body 2
+objects/services/service-1: service body 1
+objects/services/service-2: service body 2'));
+    }
+
+    /**
+     * 
+     */
     public function testClearMetadata()
     {
         $objectStorage = $this->getInstance();

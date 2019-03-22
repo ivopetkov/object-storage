@@ -640,6 +640,13 @@ class ObjectStorage
                                 return $result;
                             }
                         }
+                    } elseif ($name === 'limit') {
+                        if (isset($commandData['limit'])) {
+                            if (!is_int($commandData['limit'])) {
+                                throw new \InvalidArgumentException('The limit property must be of type int for item[' . $index . ']');
+                            }
+                            return $commandData['limit'];
+                        }
                     } else {
                         throw new \InvalidArgumentException('Invalid property ' . $name . ' for item[' . $index . ']');
                     }
@@ -825,6 +832,7 @@ class ObjectStorage
                     if ($resultKeys === null) {
                         $resultKeys = [];
                     }
+                    $limit = $getProperty('limit');
                     $metadataResultKeys = $getProperty('result.metadata.*');
                     $returnBody = array_search('body', $resultKeys) !== false;
                     $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
@@ -842,7 +850,7 @@ class ObjectStorage
                                 $position = strrpos($keyData[1], '/');
                                 if ($position !== false) {
                                     $dir = substr($keyData[1], 0, $position);
-                                    $files = $this->getFiles($this->objectsDir . $dir . '/', true);
+                                    $files = $this->getFiles($this->objectsDir . $dir . '/', true, $limit !== null ? ($limit - sizeof($whereKeys)) : null);
                                     foreach ($files as $filename) {
                                         $whereKeys[] = $dir . '/' . $filename;
                                     }
@@ -857,7 +865,7 @@ class ObjectStorage
                         }
                     }
                     if (!$whereKeysPrepared) {
-                        $whereKeys = $this->getFiles($this->objectsDir, true);
+                        $whereKeys = $this->getFiles($this->objectsDir, true, $limit);
                     }
                     foreach ($where as $whereKey => $whereValue) {
                         if (substr($whereKey, 0, 9) === 'metadata.') {
@@ -1033,10 +1041,14 @@ class ObjectStorage
      * 
      * @param string $dir The directory name.
      * @param boolean $recursive If TRUE all files in subdirectories will be returned too.
+     * @param int|null $limit Maximum number of files to return.
      * @return array An array containing list of all files in the directory specified.
      */
-    private function getFiles(string $dir, bool $recursive = false): array
+    private function getFiles(string $dir, bool $recursive = false, $limit = null): array
     {
+        if ($limit === 0) {
+            return [];
+        }
         $result = [];
         if (is_dir($dir)) {
             $list = scandir($dir);
@@ -1045,7 +1057,7 @@ class ObjectStorage
                     if ($filename != '.' && $filename != '..') {
                         if (is_dir($dir . $filename)) {
                             if ($recursive === true) {
-                                $dirResult = $this->getFiles($dir . $filename . '/', true);
+                                $dirResult = $this->getFiles($dir . $filename . '/', true, $limit !== null ? ($limit - sizeof($result)) : null);
                                 if (!empty($dirResult)) {
                                     foreach ($dirResult as $index => $value) {
                                         $dirResult[$index] = $filename . '/' . $value;
@@ -1055,6 +1067,9 @@ class ObjectStorage
                             }
                         } else {
                             $result[] = $filename;
+                            if ($limit !== null && $limit === sizeof($result)) {
+                                break;
+                            }
                         }
                     }
                 }
