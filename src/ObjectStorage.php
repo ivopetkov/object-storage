@@ -864,7 +864,9 @@ class ObjectStorage
                             }
                         }
                     }
-                    if (!$whereKeysPrepared) {
+                    if ($whereKeysPrepared) {
+                        $whereKeys = array_unique($whereKeys);
+                    } else {
                         $whereKeys = $this->getFiles($this->objectsDir, true, $limit);
                     }
                     foreach ($where as $whereKey => $whereValue) {

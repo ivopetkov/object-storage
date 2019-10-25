@@ -1654,4 +1654,39 @@ objects/product-1: product body 1
 '));
     }
 
+    public function testSearchForDuplicates()
+    {
+        $objectStorage = $this->getInstance();
+        $objectStorage->set(
+            [
+                'key' => 'book/book1',
+                'body' => 'book1'
+            ]
+        );
+        $objectStorage->set(
+            [
+                'key' => 'book/book2',
+                'body' => 'book2'
+            ]
+        );
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', 'book/', 'startWith'],
+                    ['key', 'book/b', 'startWith']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'book/book1'
+            ),
+            1 =>
+            array(
+                'key' => 'book/book2'
+            ),
+        ));
+    }
 }
