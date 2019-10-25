@@ -252,12 +252,12 @@ class ObjectStorage
         $filesToDelete = [];
         $emptyOpenedFiles = []; // opened but no content set
 
-        $encodeMetaData = function($metadata) {
+        $encodeMetaData = function ($metadata) {
             return "content-type:json\n\n" . json_encode($metadata);
         };
 
         $decodeMetadata = function ($metadata) {
-            if (!isset($metadata{0})) {
+            if (!isset($metadata[0])) {
                 return [];
             }
             $parts = explode("\n\n", $metadata, 2);
@@ -268,7 +268,7 @@ class ObjectStorage
             return is_array($result) ? $result : [];
         };
 
-        $isValidMetadata = function($key, $value, $allowWildcard) {
+        $isValidMetadata = function ($key, $value, $allowWildcard) {
             if ($allowWildcard && $key === 'metadata.*') {
                 return true;
             }
@@ -281,7 +281,7 @@ class ObjectStorage
             return preg_match("/^[a-zA-Z0-9\.\-\_]*$/", $key) === 1;
         };
 
-        $areWhereConditionsMet = function($value, $conditions) {
+        $areWhereConditionsMet = function ($value, $conditions) {
             foreach ($conditions as $conditionData) {
                 if ($conditionData[0] === '==') {
                     if ($value === $conditionData[1]) {
@@ -328,7 +328,7 @@ class ObjectStorage
             return false;
         };
 
-        $prepareFileForWriting = function($filename) use (&$filePointers, &$emptyOpenedFiles) {
+        $prepareFileForWriting = function ($filename) use (&$filePointers, &$emptyOpenedFiles) {
             if (isset($filePointers[$filename])) {
                 return;
             }
@@ -338,7 +338,7 @@ class ObjectStorage
             if ($this->createFileDirIfNotExists($filename) === false) {
                 throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable (cannot create dir).');
             }
-            $getFilePointer = function() use ($filename, &$emptyOpenedFiles) {
+            $getFilePointer = function () use ($filename, &$emptyOpenedFiles) {
                 clearstatcache(false, $filename);
                 $isNew = !is_file($filename);
                 $filePointer = fopen($filename, "c+");
@@ -372,7 +372,7 @@ class ObjectStorage
             }
         };
 
-        $prepareFileForReading = function($filename, $required = false) use (&$filePointers) {
+        $prepareFileForReading = function ($filename, $required = false) use (&$filePointers) {
             if (isset($filePointers[$filename])) {
                 return true;
             }
@@ -402,7 +402,7 @@ class ObjectStorage
             }
         };
 
-        $setFileContent = function($filename, $content) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+        $setFileContent = function ($filename, $content) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
             if (isset($filePointers[$filename])) {
                 if (isset($filesToDelete[$filename])) {
                     unset($filesToDelete[$filename]);
@@ -419,7 +419,7 @@ class ObjectStorage
             }
         };
 
-        $appendFileContent = function($filename, $content) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+        $appendFileContent = function ($filename, $content) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
             if (isset($filePointers[$filename])) {
                 $filePointer = $filePointers[$filename];
                 if (isset($filesToDelete[$filename])) {
@@ -437,7 +437,7 @@ class ObjectStorage
             }
         };
 
-        $getFileContent = function($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+        $getFileContent = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
             if (isset($filesToDelete[$filename])) {
                 return null;
             }
@@ -470,7 +470,7 @@ class ObjectStorage
             }
         };
 
-        $deleteFile = function($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+        $deleteFile = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
             if (isset($filePointers[$filename])) {
                 $filePointer = $filePointers[$filename];
                 ftruncate($filePointer, 0);
@@ -482,7 +482,7 @@ class ObjectStorage
             }
         };
 
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
             restore_error_handler();
             throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
         });
@@ -492,7 +492,7 @@ class ObjectStorage
         try {
             foreach ($commands as $index => $commandData) {
 
-                $getProperty = function($name, $required = false) use ($index, $commandData, $isValidMetadata) {
+                $getProperty = function ($name, $required = false) use ($index, $commandData, $isValidMetadata) {
                     if ($name === 'command') {
                         if (isset($commandData['command'])) {
                             if (!is_string($commandData['command'])) {
@@ -679,7 +679,7 @@ class ObjectStorage
                         $prepareFileForWriting($this->metadataDir . $key);
                     }
 
-                    $functions[$index] = function() use ($key, $body, $metadata, $modifyBody, $modifyMetadata, $setFileContent, $getFileContent, $deleteFile, $decodeMetadata, $encodeMetaData) {
+                    $functions[$index] = function () use ($key, $body, $metadata, $modifyBody, $modifyMetadata, $setFileContent, $getFileContent, $deleteFile, $decodeMetadata, $encodeMetaData) {
                         if ($modifyBody) {
                             $setFileContent($this->objectsDir . $key, $body);
                         }
@@ -708,7 +708,7 @@ class ObjectStorage
                     $key = $getProperty('key', true);
                     $body = $getProperty('body', true);
                     $prepareFileForWriting($this->objectsDir . $key);
-                    $functions[$index] = function() use ($key, $body, $appendFileContent) {
+                    $functions[$index] = function () use ($key, $body, $appendFileContent) {
                         $appendFileContent($this->objectsDir . $key, $body);
                     };
                 } elseif ($command === 'delete') {
@@ -727,7 +727,7 @@ class ObjectStorage
                     if ($deleteMetadataFile) {
                         $prepareFileForWriting($this->metadataDir . $key);
                     }
-                    $functions[$index] = function() use ($key, $deleteObjectFile, $deleteMetadataFile, $deleteFile) {
+                    $functions[$index] = function () use ($key, $deleteObjectFile, $deleteMetadataFile, $deleteFile) {
                         if ($deleteObjectFile) {
                             $deleteFile($this->objectsDir . $key);
                         }
@@ -742,7 +742,7 @@ class ObjectStorage
                     $prepareFileForReading($this->metadataDir . $sourceKey);
                     $prepareFileForWriting($this->objectsDir . $targetKey);
                     $prepareFileForWriting($this->metadataDir . $targetKey);
-                    $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
+                    $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
                         if ($sourceBody === null) { // The source file is deleted in previous command
                             throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The source object (' . $sourceKey . ') does not exists!');
@@ -764,7 +764,7 @@ class ObjectStorage
                     $prepareFileForWriting($this->metadataDir . $sourceKey);
                     $prepareFileForWriting($this->objectsDir . $targetKey);
                     $prepareFileForWriting($this->metadataDir . $targetKey);
-                    $functions[$index] = function() use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
+                    $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
                         if ($sourceBody === null) { // The source file is deleted in previous command
                             throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The source object (' . $sourceKey . ') does not exists!');
@@ -796,7 +796,7 @@ class ObjectStorage
                         $prepareFileForReading($this->metadataDir . $key);
                     }
 
-                    $functions[$index] = function() use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $getFileContent, $decodeMetadata) {
+                    $functions[$index] = function () use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $getFileContent, $decodeMetadata) {
                         $content = $getFileContent($this->objectsDir . $key);
                         if ($content !== null) {
                             $objectResult = [];
@@ -885,7 +885,7 @@ class ObjectStorage
                         }
                     }
 
-                    $functions[$index] = function() use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $decodeMetadata, $areWhereConditionsMet) {
+                    $functions[$index] = function () use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $decodeMetadata, $areWhereConditionsMet) {
                         $result = [];
                         foreach ($whereKeys as $key) {
 
@@ -1020,7 +1020,7 @@ class ObjectStorage
     {
         if (!is_dir($dir)) {
             try {
-                set_error_handler(function($errno, $errstr, $errfile, $errline) {
+                set_error_handler(function ($errno, $errstr, $errfile, $errline) {
                     restore_error_handler();
                     throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
                 });
@@ -1077,5 +1077,4 @@ class ObjectStorage
         }
         return $result;
     }
-
 }
