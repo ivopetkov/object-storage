@@ -22,49 +22,49 @@ class DataTest extends ObjectStorageTestCase
 
         // Create initial data
         $objectStorage->set(
-                [
-                    'key' => 'book-1449392776',
-                    'body' => 'book 1449392776 content in pdf format',
-                    'metadata.title' => 'Programming PHP',
-                    'metadata.authors' => '["Kevin Tatroe", "Peter MacIntyre", "Rasmus Lerdorf"]',
-                    'metadata.year' => '2013'
-                ]
+            [
+                'key' => 'book-1449392776',
+                'body' => 'book 1449392776 content in pdf format',
+                'metadata.title' => 'Programming PHP',
+                'metadata.authors' => '["Kevin Tatroe", "Peter MacIntyre", "Rasmus Lerdorf"]',
+                'metadata.year' => '2013'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'book-1430260319',
-                    'body' => 'book 1430260319 content in pdf format',
-                    'metadata.title' => 'PHP Objects, Patterns, and Practice',
-                    'metadata.authors' => '["Matt Zandstra"]',
-                    'metadata.year' => '2013'
-                ]
+            [
+                'key' => 'book-1430260319',
+                'body' => 'book 1430260319 content in pdf format',
+                'metadata.title' => 'PHP Objects, Patterns, and Practice',
+                'metadata.authors' => '["Matt Zandstra"]',
+                'metadata.year' => '2013'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'book-1430268158',
-                    'body' => 'book 1430268158 content in pdf format',
-                    'metadata.title' => 'PHP for Absolute Beginners',
-                    'metadata.authors' => '["Jason Lengstorf", "Thomas Blom Hansen"]',
-                    'metadata.year' => '2014'
-                ]
+            [
+                'key' => 'book-1430268158',
+                'body' => 'book 1430268158 content in pdf format',
+                'metadata.title' => 'PHP for Absolute Beginners',
+                'metadata.authors' => '["Jason Lengstorf", "Thomas Blom Hansen"]',
+                'metadata.year' => '2014'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'book-1000000000'
-                ]
+            [
+                'key' => 'book-1000000000'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'book-2000000000',
-                    'body' => 'book 2000000000 content in pdf format'
-                ]
+            [
+                'key' => 'book-2000000000',
+                'body' => 'book 2000000000 content in pdf format'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'books/3000000000',
-                    'body' => 'book 3000000000 content in pdf format',
-                    'metadata.year' => '2014'
-                ]
+            [
+                'key' => 'books/3000000000',
+                'body' => 'book 3000000000 content in pdf format',
+                'metadata.year' => '2014'
+            ]
         );
         $this->assertTrue($this->checkState('ed20ab8c4a519ca9fc10608331cd8bc1
 metadata/book-1430260319: content-type:json
@@ -91,12 +91,12 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // Search
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', ['book-1449392776', 'book-1430268158']]
-                    ],
-                    'result' => ['key', 'body', 'metadata.title', 'metadata.year']
-                ]
+            [
+                'where' => [
+                    ['key', ['book-1449392776', 'book-1430268158']]
+                ],
+                'result' => ['key', 'body', 'metadata.title', 'metadata.year']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -115,7 +115,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
             ),
         ));
         $this->assertTrue($this->checkState(
-                        'ed20ab8c4a519ca9fc10608331cd8bc1
+            'ed20ab8c4a519ca9fc10608331cd8bc1
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -134,19 +134,20 @@ objects/book-1430268158: book 1430268158 content in pdf format
 objects/book-1449392776: book 1449392776 content in pdf format
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
 
         // Set (update metadata)
         $objectStorage->set(
-                [
-                    'key' => 'book-1449392776',
-                    'metadata.rating' => '3.4'
-                ]
+            [
+                'key' => 'book-1449392776',
+                'metadata.rating' => '3.4'
+            ]
         );
         $this->assertTrue($this->checkState(
-                        '534393dff9b252fcc411e1c2b8e501ed
+            '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -165,29 +166,30 @@ objects/book-1430268158: book 1430268158 content in pdf format
 objects/book-1449392776: book 1449392776 content in pdf format
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
 
         // Get
         $result = $objectStorage->get(
-                [
-                    'key' => 'book-1449392776',
-                    'result' => []
-                ]
+            [
+                'key' => 'book-1449392776',
+                'result' => []
+            ]
         );
         $this->assertTrue($result === []);
         $result = $objectStorage->get(
-                [
-                    'key' => 'book-1449392776',
-                    'result' => ['metadata.rating']
-                ]
+            [
+                'key' => 'book-1449392776',
+                'result' => ['metadata.rating']
+            ]
         );
         $this->assertTrue($result === array(
             'metadata.rating' => '3.4',
         ));
         $this->assertTrue($this->checkState(
-                        '534393dff9b252fcc411e1c2b8e501ed
+            '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -206,18 +208,19 @@ objects/book-1430268158: book 1430268158 content in pdf format
 objects/book-1449392776: book 1449392776 content in pdf format
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
         // Set
         $objectStorage->set(
-                [
-                    'key' => 'book-1449392776-comments',
-                    'body' => "John Smith: This book is awaseome.\n"
-                ]
+            [
+                'key' => 'book-1449392776-comments',
+                'body' => "John Smith: This book is awaseome.\n"
+            ]
         );
         $this->assertTrue($this->checkState(
-                        '0b1f6ab2f7435f15566e50a89a6173ff
+            '0b1f6ab2f7435f15566e50a89a6173ff
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -238,19 +241,20 @@ objects/book-1449392776-comments: John Smith: This book is awaseome.
 
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
 
         // Append
         $objectStorage->append(
-                [
-                    'key' => 'book-1449392776-comments',
-                    'body' => "Oliver Mark: Best book I've ever read.\n"
-                ]
+            [
+                'key' => 'book-1449392776-comments',
+                'body' => "Oliver Mark: Best book I've ever read.\n"
+            ]
         );
         $this->assertTrue($this->checkState(
-                        '5acced67220df7bf1d104773c67555eb
+            '5acced67220df7bf1d104773c67555eb
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -272,18 +276,19 @@ Oliver Mark: Best book I\'ve ever read.
 
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
 
         // delete
         $objectStorage->delete(
-                [
-                    'key' => 'book-1449392776-comments'
-                ]
+            [
+                'key' => 'book-1449392776-comments'
+            ]
         );
         $this->assertTrue($this->checkState(
-                        '534393dff9b252fcc411e1c2b8e501ed
+            '534393dff9b252fcc411e1c2b8e501ed
 metadata/book-1430260319: content-type:json
 
 {"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
@@ -302,20 +307,21 @@ objects/book-1430268158: book 1430268158 content in pdf format
 objects/book-1449392776: book 1449392776 content in pdf format
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
 
         // append
         $objectStorage->append(
-                [
-                    'key' => 'book-1000000000-comments',
-                    'body' => "Ivo Petkov: Great!.\n",
-                    'metadata.ivo' => "test"
-                ]
+            [
+                'key' => 'book-1000000000-comments',
+                'body' => "Ivo Petkov: Great!.\n",
+                'metadata.ivo' => "test"
+            ]
         );
         $this->assertTrue($this->checkState(
-                        '65c9e2014d2e54752d99a49f56c3fe1e
+            '65c9e2014d2e54752d99a49f56c3fe1e
 metadata/book-1000000000-comments: content-type:json
 
 {"ivo":"test"}
@@ -339,17 +345,18 @@ objects/book-1430268158: book 1430268158 content in pdf format
 objects/book-1449392776: book 1449392776 content in pdf format
 objects/book-2000000000: book 2000000000 content in pdf format
 objects/books/3000000000: book 3000000000 content in pdf format
-'));
+'
+        ));
 
 
         // search
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['metadata.year', '2013']
-                    ],
-                    'result' => ['key', 'metadata.title', 'metadata.authors']
-                ]
+            [
+                'where' => [
+                    ['metadata.year', '2013']
+                ],
+                'result' => ['key', 'metadata.title', 'metadata.authors']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -397,10 +404,10 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // get
         $result = $objectStorage->get(
-                [
-                    'key' => 'book-1449392776',
-                    'result' => ['key', 'body', 'metadata']
-                ]
+            [
+                'key' => 'book-1449392776',
+                'result' => ['key', 'body', 'metadata']
+            ]
         );
         $this->assertTrue($result === array(
             'key' => 'book-1449392776',
@@ -439,10 +446,10 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // duplicate
         $objectStorage->duplicate(
-                [
-                    'sourceKey' => 'book-1449392776',
-                    'targetKey' => 'book-1449392776-copy'
-                ]
+            [
+                'sourceKey' => 'book-1449392776',
+                'targetKey' => 'book-1449392776-copy'
+            ]
         );
         $this->assertTrue($this->checkState('9b0ef8154be7ef0b7b939f7ca2e9af77
 metadata/book-1000000000-comments: content-type:json
@@ -478,10 +485,10 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // rename
         $objectStorage->rename(
-                [
-                    'sourceKey' => 'book-1449392776',
-                    'targetKey' => 'book-5000000000'
-                ]
+            [
+                'sourceKey' => 'book-1449392776',
+                'targetKey' => 'book-5000000000'
+            ]
         );
         $this->assertTrue($this->checkState('8171d7214894ef37665cd74576bde01f
 metadata/book-1000000000-comments: content-type:json
@@ -517,49 +524,49 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // delete
         $objectStorage->delete(
-                [
-                    'key' => 'book-1000000000'
-                ]
+            [
+                'key' => 'book-1000000000'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-1000000000-comments'
-                ]
+            [
+                'key' => 'book-1000000000-comments'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-1449392776'
-                ]
+            [
+                'key' => 'book-1449392776'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-1430260319'
-                ]
+            [
+                'key' => 'book-1430260319'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-1430268158'
-                ]
+            [
+                'key' => 'book-1430268158'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-2000000000'
-                ]
+            [
+                'key' => 'book-2000000000'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'books/3000000000'
-                ]
+            [
+                'key' => 'books/3000000000'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-1449392776-copy'
-                ]
+            [
+                'key' => 'book-1449392776-copy'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'book-5000000000'
-                ]
+            [
+                'key' => 'book-5000000000'
+            ]
         );
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
@@ -567,85 +574,85 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // multiple commands
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-5',
-                        'body' => 'product body 1'
+                    'command' => 'set',
+                    'key' => 'product-5',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'append',
+                    'key' => 'products',
+                    'body' => '[5]'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-6',
+                    'body' => 'product body'
+                ],
+                [
+                    'command' => 'append',
+                    'key' => 'products',
+                    'body' => '[6]'
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-6'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-5',
+                    'result' => ['key', 'body']
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-5',
+                    'body' => 'product body 2',
+                    'metadata.ivo' => '2011'
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'product-5']
                     ],
-                    [
-                        'command' => 'append',
-                        'key' => 'products',
-                        'body' => '[5]'
+                    'result' => ['key', 'body', 'metadata']
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-5'
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'product-5']
                     ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-6',
-                        'body' => 'product body'
+                    'result' => ['key', 'body']
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-5',
+                    'body' => 'product body 3'
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'product-5']
                     ],
-                    [
-                        'command' => 'append',
-                        'key' => 'products',
-                        'body' => '[6]'
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-6'
-                    ],
-                    [
-                        'command' => 'get',
-                        'key' => 'product-5',
-                        'result' => ['key', 'body']
-                    ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-5',
-                        'body' => 'product body 2',
-                        'metadata.ivo' => '2011'
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['key', 'product-5']
-                        ],
-                        'result' => ['key', 'body', 'metadata']
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-5'
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['key', 'product-5']
-                        ],
-                        'result' => ['key', 'body']
-                    ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-5',
-                        'body' => 'product body 3'
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['key', 'product-5']
-                        ],
-                        'result' => ['key', 'body']
-                    ],
-                    [
-                        'command' => 'search',
-                        'result' => ['key', 'body']
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-5'
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'products'
-                    ]
+                    'result' => ['key', 'body']
+                ],
+                [
+                    'command' => 'search',
+                    'result' => ['key', 'body']
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-5'
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'products'
                 ]
+            ]
         );
 
         $this->assertTrue($result === array(
@@ -667,8 +674,7 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ),
             ),
             8 => null,
-            9 => array(
-            ),
+            9 => array(),
             10 => null,
             11 => array(
                 0 =>
@@ -699,10 +705,10 @@ objects/books/3000000000: book 3000000000 content in pdf format
 
         // test delete metadata
         $objectStorage->set(
-                [
-                    'key' => 'test-delete-metadata',
-                    'metadata.rating' => '3.4'
-                ]
+            [
+                'key' => 'test-delete-metadata',
+                'metadata.rating' => '3.4'
+            ]
         );
         $this->assertTrue($this->checkState('e6ff92ea7fb169ba3e87676f3bbc379e
 metadata/test-delete-metadata: content-type:json
@@ -712,18 +718,18 @@ objects/test-delete-metadata:
 '));
 
         $objectStorage->set(
-                [
-                    'key' => 'test-delete-metadata',
-                    'metadata.rating' => ''
-                ]
+            [
+                'key' => 'test-delete-metadata',
+                'metadata.rating' => ''
+            ]
         );
         $this->assertTrue($this->checkState('366ff7633ebcec69cf1954175e4aa7fc
 objects/test-delete-metadata: '));
 
         $objectStorage->delete(
-                [
-                    'key' => 'test-delete-metadata'
-                ]
+            [
+                'key' => 'test-delete-metadata'
+            ]
         );
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
@@ -732,22 +738,22 @@ objects/test-delete-metadata: '));
 
         // regexp search
         $objectStorage->set(
-                [
-                    'key' => 'prefix1/dataa',
-                    'body' => 'A'
-                ]
+            [
+                'key' => 'prefix1/dataa',
+                'body' => 'A'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'prefix1/datab',
-                    'body' => 'B'
-                ]
+            [
+                'key' => 'prefix1/datab',
+                'body' => 'B'
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'prefix2/datac',
-                    'body' => 'C'
-                ]
+            [
+                'key' => 'prefix2/datac',
+                'body' => 'C'
+            ]
         );
         $this->assertTrue($this->checkState('f34e94bee39fd95da85fc91a3ca302ea
 objects/prefix1/dataa: A
@@ -756,12 +762,12 @@ objects/prefix2/datac: C
 '));
 
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', '^prefix1\/', 'regexp']
-                    ],
-                    'result' => ['key', 'body']
-                ]
+            [
+                'where' => [
+                    ['key', '^prefix1\/', 'regexp']
+                ],
+                'result' => ['key', 'body']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -776,12 +782,12 @@ objects/prefix2/datac: C
             ),
         ));
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', 'prefix1/', 'startWith']
-                    ],
-                    'result' => ['key', 'body']
-                ]
+            [
+                'where' => [
+                    ['key', 'prefix1/', 'startWith']
+                ],
+                'result' => ['key', 'body']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -796,12 +802,12 @@ objects/prefix2/datac: C
             ),
         ));
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', 'efix1/da', 'search']
-                    ],
-                    'result' => ['key', 'body']
-                ]
+            [
+                'where' => [
+                    ['key', 'efix1/da', 'search']
+                ],
+                'result' => ['key', 'body']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -822,19 +828,19 @@ objects/prefix2/datac: C
 '));
 
         $objectStorage->delete(
-                [
-                    'key' => 'prefix1/dataa'
-                ]
+            [
+                'key' => 'prefix1/dataa'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'prefix1/datab'
-                ]
+            [
+                'key' => 'prefix1/datab'
+            ]
         );
         $objectStorage->delete(
-                [
-                    'key' => 'prefix2/datac'
-                ]
+            [
+                'key' => 'prefix2/datac'
+            ]
         );
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
@@ -848,45 +854,45 @@ objects/prefix2/datac: C
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
-                [
-                    'key' => 'emptydata',
-                    'body' => ''
-                ]
+            [
+                'key' => 'emptydata',
+                'body' => ''
+            ]
         );
         $this->assertTrue($this->checkState('9dc100d57ca4b13580cd101583e78059
 objects/emptydata: 
 '));
 
         $result = $objectStorage->get(
-                [
-                    'key' => 'emptydata',
-                    'result' => ['body']
-                ]
+            [
+                'key' => 'emptydata',
+                'result' => ['body']
+            ]
         );
         $this->assertTrue($result === array(
             'body' => '',
         ));
 
         $result = $objectStorage->get(
-                [
-                    'key' => 'emptydata',
-                    'result' => []
-                ]
+            [
+                'key' => 'emptydata',
+                'result' => []
+            ]
         );
         $this->assertTrue($result === []);
 
         $objectStorage->delete(
-                [
-                    'key' => 'emptydata'
-                ]
+            [
+                'key' => 'emptydata'
+            ]
         );
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
         $result = $objectStorage->get(
-                [
-                    'key' => 'emptydata',
-                    'result' => ['body']
-                ]
+            [
+                'key' => 'emptydata',
+                'result' => ['body']
+            ]
         );
         $this->assertTrue($result === null);
     }
@@ -899,11 +905,11 @@ objects/emptydata:
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
-                [
-                    'key' => 'key1',
-                    'body' => 'body1',
-                    'metadata.key1' => 'value1'
-                ]
+            [
+                'key' => 'key1',
+                'body' => 'body1',
+                'metadata.key1' => 'value1'
+            ]
         );
         $this->assertTrue($this->checkState('429d57556edd45e292527bbf97befb3e
 metadata/key1: content-type:json
@@ -919,10 +925,10 @@ objects/key1: body1
 '));
 
         $result = $objectStorage->get(
-                [
-                    'key' => 'key1',
-                    'result' => ['body', 'metadata']
-                ]
+            [
+                'key' => 'key1',
+                'result' => ['body', 'metadata']
+            ]
         );
         $this->assertTrue($result === array(
             'body' => 'body1',
@@ -937,12 +943,12 @@ objects/key1: body1
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
-                [
-                    'key' => 'data1',
-                    'body' => 'body1',
-                    'metadata.var1' => '1',
-                    'metadata.var2' => '2'
-                ]
+            [
+                'key' => 'data1',
+                'body' => 'body1',
+                'metadata.var1' => '1',
+                'metadata.var2' => '2'
+            ]
         );
         $this->assertTrue($this->checkState('dcc62823d8b65f6f72741098df815fb0
 metadata/data1: content-type:json
@@ -951,13 +957,13 @@ metadata/data1: content-type:json
 objects/data1: body1'));
 
         $objectStorage->set(
-                [
-                    'key' => 'data1',
-                    'body' => 'body1',
-                    'metadata.*' => 'old',
-                    'metadata.var2' => '2+',
-                    'metadata.var3' => '3'
-                ]
+            [
+                'key' => 'data1',
+                'body' => 'body1',
+                'metadata.*' => 'old',
+                'metadata.var2' => '2+',
+                'metadata.var3' => '3'
+            ]
         );
         $this->assertTrue($this->checkState('d160e9e3ab4c03852ae7adfe2f3dc3ae
 metadata/data1: content-type:json
@@ -966,12 +972,12 @@ metadata/data1: content-type:json
 objects/data1: body1'));
 
         $objectStorage->set(
-                [
-                    'key' => 'data1',
-                    'body' => 'body1',
-                    'metadata.*' => '',
-                    'metadata.var3' => '3+'
-                ]
+            [
+                'key' => 'data1',
+                'body' => 'body1',
+                'metadata.*' => '',
+                'metadata.var3' => '3+'
+            ]
         );
         $this->assertTrue($this->checkState('276612436ecf6bd4c3675fb1f3593e44
 metadata/data1: content-type:json
@@ -979,8 +985,8 @@ metadata/data1: content-type:json
 {"var3":"3+"}
 objects/data1: body1'));
 
-//        echo (isset($result) ? "\n\n" . var_export($result) : '') . "\n\n" . $this->getState() . "\n\n";
-//        exit;
+        //        echo (isset($result) ? "\n\n" . var_export($result) : '') . "\n\n" . $this->getState() . "\n\n";
+        //        exit;
     }
 
     /**
@@ -991,32 +997,32 @@ objects/data1: body1'));
         $objectStorage = $this->getInstance();
 
         $objectStorage->set(
-                [
-                    'key' => 'data1',
-                    'body' => ''
-                ]
+            [
+                'key' => 'data1',
+                'body' => ''
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'data2',
-                    'body' => ''
-                ]
+            [
+                'key' => 'data2',
+                'body' => ''
+            ]
         );
         $objectStorage->set(
-                [
-                    'key' => 'data3',
-                    'body' => ''
-                ]
+            [
+                'key' => 'data3',
+                'body' => ''
+            ]
         );
 
         // Test equal
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', 'data1', 'equal']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', 'data1', 'equal']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1027,12 +1033,12 @@ objects/data1: body1'));
 
         // Test notEqual
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', 'data1', 'notEqual']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', 'data1', 'notEqual']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1047,12 +1053,12 @@ objects/data1: body1'));
 
         // Test startWith
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', 'data', 'startWith']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', 'data', 'startWith']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1071,12 +1077,12 @@ objects/data1: body1'));
 
         // Test notStartWith
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', 'data2', 'notStartWith']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', 'data2', 'notStartWith']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1092,12 +1098,12 @@ objects/data1: body1'));
 
         // Test endWith
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', '2', 'endWith']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', '2', 'endWith']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1108,12 +1114,12 @@ objects/data1: body1'));
 
         // Test notEndWith
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', '2', 'notEndWith']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', '2', 'notEndWith']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1128,12 +1134,12 @@ objects/data1: body1'));
 
         // Test regExp
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', '1', 'regExp']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', '1', 'regExp']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1144,12 +1150,12 @@ objects/data1: body1'));
 
         // Test notRegExp
         $result = $objectStorage->search(
-                [
-                    'where' => [
-                        ['key', '1', 'notRegExp']
-                    ],
-                    'result' => ['key']
-                ]
+            [
+                'where' => [
+                    ['key', '1', 'notRegExp']
+                ],
+                'result' => ['key']
+            ]
         );
         $this->assertTrue($result === array(
             0 =>
@@ -1170,22 +1176,22 @@ objects/data1: body1'));
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1'
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-1'
-                    ],
-                    [
-                        'command' => 'get',
-                        'key' => 'product-1',
-                        'result' => ['key', 'body']
-                    ]
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'body']
                 ]
+            ]
         );
         $this->assertTrue($result === array(
             0 => null,
@@ -1204,27 +1210,27 @@ objects/data1: body1'));
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1'
-                    ],
-                    [
-                        'command' => 'delete',
-                        'key' => 'product-1'
-                    ],
-                    [
-                        'command' => 'append',
-                        'key' => 'product-1',
-                        'body' => 'product body 2'
-                    ],
-                    [
-                        'command' => 'get',
-                        'key' => 'product-1',
-                        'result' => ['key', 'body']
-                    ]
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'append',
+                    'key' => 'product-1',
+                    'body' => 'product body 2'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'body']
                 ]
+            ]
         );
         $this->assertTrue($result === array(
             0 => null,
@@ -1250,22 +1256,22 @@ objects/product-1: product body 2
         $exceptionCaught = false;
         try {
             $objectStorage->execute(
+                [
                     [
-                        [
-                            'command' => 'set',
-                            'key' => 'product-1',
-                            'body' => 'product body 1'
-                        ],
-                        [
-                            'command' => 'delete',
-                            'key' => 'product-1'
-                        ],
-                        [
-                            'command' => 'rename',
-                            'sourceKey' => 'product-1',
-                            'targetKey' => 'product-2',
-                        ]
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'delete',
+                        'key' => 'product-1'
+                    ],
+                    [
+                        'command' => 'rename',
+                        'sourceKey' => 'product-1',
+                        'targetKey' => 'product-2',
                     ]
+                ]
             );
         } catch (\IvoPetkov\ObjectStorage\ObjectNotFoundException $e) {
             $exceptionCaught = true;
@@ -1284,22 +1290,22 @@ objects/product-1: product body 2
         $objectStorage = $this->getInstance();
         try {
             $objectStorage->execute(
+                [
                     [
-                        [
-                            'command' => 'set',
-                            'key' => 'product-1',
-                            'body' => 'product body 1'
-                        ],
-                        [
-                            'command' => 'delete',
-                            'key' => 'product-1'
-                        ],
-                        [
-                            'command' => 'duplicate',
-                            'sourceKey' => 'product-1',
-                            'targetKey' => 'product-2',
-                        ]
+                        'command' => 'set',
+                        'key' => 'product-1',
+                        'body' => 'product body 1'
+                    ],
+                    [
+                        'command' => 'delete',
+                        'key' => 'product-1'
+                    ],
+                    [
+                        'command' => 'duplicate',
+                        'sourceKey' => 'product-1',
+                        'targetKey' => 'product-2',
                     ]
+                ]
             );
         } catch (\IvoPetkov\ObjectStorage\ObjectNotFoundException $e) {
             $exceptionCaught = true;
@@ -1317,29 +1323,29 @@ objects/product-1: product body 2
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1a',
-                        'body' => 'product body 1'
-                    ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-2a',
-                        'body' => 'product body 2',
-                        'metadata.key' => 'value'
-                    ],
-                    [
-                        'command' => 'rename',
-                        'sourceKey' => 'product-1a',
-                        'targetKey' => 'product-1b',
-                    ],
-                    [
-                        'command' => 'rename',
-                        'sourceKey' => 'product-2a',
-                        'targetKey' => 'product-2b',
-                    ]
+                    'command' => 'set',
+                    'key' => 'product-1a',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-2a',
+                    'body' => 'product body 2',
+                    'metadata.key' => 'value'
+                ],
+                [
+                    'command' => 'rename',
+                    'sourceKey' => 'product-1a',
+                    'targetKey' => 'product-1b',
+                ],
+                [
+                    'command' => 'rename',
+                    'sourceKey' => 'product-2a',
+                    'targetKey' => 'product-2b',
                 ]
+            ]
         );
         $this->assertTrue($result === array(
             0 => null,
@@ -1363,29 +1369,29 @@ objects/product-2b: product body 2'));
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1a',
-                        'body' => 'product body 1'
-                    ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-2a',
-                        'body' => 'product body 2',
-                        'metadata.key' => 'value'
-                    ],
-                    [
-                        'command' => 'duplicate',
-                        'sourceKey' => 'product-1a',
-                        'targetKey' => 'product-1b',
-                    ],
-                    [
-                        'command' => 'duplicate',
-                        'sourceKey' => 'product-2a',
-                        'targetKey' => 'product-2b',
-                    ]
+                    'command' => 'set',
+                    'key' => 'product-1a',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-2a',
+                    'body' => 'product body 2',
+                    'metadata.key' => 'value'
+                ],
+                [
+                    'command' => 'duplicate',
+                    'sourceKey' => 'product-1a',
+                    'targetKey' => 'product-1b',
+                ],
+                [
+                    'command' => 'duplicate',
+                    'sourceKey' => 'product-2a',
+                    'targetKey' => 'product-2b',
                 ]
+            ]
         );
         $this->assertTrue($result === array(
             0 => null,
@@ -1414,26 +1420,26 @@ objects/product-2b: product body 2'));
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1a',
-                        'body' => 'product body 1'
+                    'command' => 'set',
+                    'key' => 'product-1a',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-2a',
+                    'body' => 'product body 2',
+                    'metadata.key' => 'value'
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['body', 'body 2', 'search']
                     ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-2a',
-                        'body' => 'product body 2',
-                        'metadata.key' => 'value'
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['body', 'body 2', 'search']
-                        ],
-                        'result' => ['key', 'body']
-                    ]
+                    'result' => ['key', 'body']
                 ]
+            ]
         );
         $this->assertTrue($result === array(
             0 => null,
@@ -1462,72 +1468,72 @@ objects/product-2a: product body 2'));
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1'
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-2',
+                    'body' => 'product body 2'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'services/service-1',
+                    'body' => 'service body 1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'services/service-2',
+                    'body' => 'service body 2'
+                ],
+                [
+                    'command' => 'search',
+                    'result' => ['key'],
+                    'limit' => 0
+                ],
+                [
+                    'command' => 'search',
+                    'result' => ['key'],
+                    'limit' => 1
+                ],
+                [
+                    'command' => 'search',
+                    'result' => ['key'],
+                    'limit' => 3
+                ],
+                [
+                    'command' => 'search',
+                    'result' => ['key'],
+                    'limit' => 5
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'services/', 'startWith']
                     ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-2',
-                        'body' => 'product body 2'
+                    'result' => ['key'],
+                    'limit' => 0
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'services/', 'startWith']
                     ],
-                    [
-                        'command' => 'set',
-                        'key' => 'services/service-1',
-                        'body' => 'service body 1'
+                    'result' => ['key'],
+                    'limit' => 1
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'services/', 'startWith']
                     ],
-                    [
-                        'command' => 'set',
-                        'key' => 'services/service-2',
-                        'body' => 'service body 2'
-                    ],
-                    [
-                        'command' => 'search',
-                        'result' => ['key'],
-                        'limit' => 0
-                    ],
-                    [
-                        'command' => 'search',
-                        'result' => ['key'],
-                        'limit' => 1
-                    ],
-                    [
-                        'command' => 'search',
-                        'result' => ['key'],
-                        'limit' => 3
-                    ],
-                    [
-                        'command' => 'search',
-                        'result' => ['key'],
-                        'limit' => 5
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['key', 'services/', 'startWith']
-                        ],
-                        'result' => ['key'],
-                        'limit' => 0
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['key', 'services/', 'startWith']
-                        ],
-                        'result' => ['key'],
-                        'limit' => 1
-                    ],
-                    [
-                        'command' => 'search',
-                        'where' => [
-                            ['key', 'services/', 'startWith']
-                        ],
-                        'result' => ['key'],
-                        'limit' => 3
-                    ]
+                    'result' => ['key'],
+                    'limit' => 3
                 ]
+            ]
         );
 
         $this->assertTrue($result === array(
@@ -1536,8 +1542,7 @@ objects/product-2a: product body 2'));
             2 => null,
             3 => null,
             4 =>
-            array(
-            ),
+            array(),
             5 =>
             array(
                 0 =>
@@ -1580,8 +1585,7 @@ objects/product-2a: product body 2'));
                 ),
             ),
             8 =>
-            array(
-            ),
+            array(),
             9 =>
             array(
                 0 =>
@@ -1616,19 +1620,19 @@ objects/services/service-2: service body 2'));
     {
         $objectStorage = $this->getInstance();
         $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1',
-                        'metadata.key1' => 'value1'
-                    ],
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'metadata.*' => ''
-                    ],
-                ]
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1',
+                    'metadata.key1' => 'value1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'metadata.*' => ''
+                ],
+            ]
         );
         $this->assertTrue($this->checkState('f66d138ab8ae4cc8fc6a34e9fa59b19f
 objects/product-1: product body 1
@@ -1636,14 +1640,14 @@ objects/product-1: product body 1
 
 
         $objectStorage->execute(
+            [
                 [
-                    [
-                        'command' => 'set',
-                        'key' => 'product-1',
-                        'body' => 'product body 1',
-                        'metadata.*' => ''
-                    ],
-                ]
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1',
+                    'metadata.*' => ''
+                ],
+            ]
         );
         $this->assertTrue($this->checkState('f66d138ab8ae4cc8fc6a34e9fa59b19f
 objects/product-1: product body 1
