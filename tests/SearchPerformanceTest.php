@@ -683,6 +683,7 @@ class SearchPerformanceTest extends ObjectStorageTestCase
                 'body' => 'book2'
             ]
         );
+        $objectStorage->internalStorageAccessLog = [];
         $result = $objectStorage->search(
             [
                 'where' => [
@@ -691,7 +692,6 @@ class SearchPerformanceTest extends ObjectStorageTestCase
                 'result' => ['key']
             ]
         );
-        $objectStorage->internalStorageAccessLog = [];
         $this->assertTrue($result === array(
             0 =>
             array(
@@ -817,6 +817,7 @@ class SearchPerformanceTest extends ObjectStorageTestCase
                 'body' => 'book2'
             ]
         );
+        $objectStorage->internalStorageAccessLog = [];
         $result = $objectStorage->search(
             [
                 'where' => [
@@ -825,7 +826,6 @@ class SearchPerformanceTest extends ObjectStorageTestCase
                 'result' => ['key']
             ]
         );
-        $objectStorage->internalStorageAccessLog = [];
         $this->assertTrue($result === array(
             0 =>
             array(
