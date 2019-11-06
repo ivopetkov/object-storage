@@ -798,7 +798,7 @@ objects/prefix2/datac: C
         $result = $objectStorage->search(
             [
                 'where' => [
-                    ['key', 'efix1/da', 'search']
+                    ['key', 'efix1/da', 'contain']
                 ],
                 'result' => ['key', 'body']
             ]
@@ -1430,7 +1430,7 @@ objects/product-2b: product body 2'));
                 [
                     'command' => 'search',
                     'where' => [
-                        ['body', 'body 2', 'search']
+                        ['body', 'body 2', 'contain']
                     ],
                     'result' => ['key', 'body']
                 ]

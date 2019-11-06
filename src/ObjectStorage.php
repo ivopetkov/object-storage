@@ -323,8 +323,8 @@ class ObjectStorage
                         continue;
                     }
                     return false;
-                } elseif ($conditionData[0] === 'search') {
-                    if (strpos(strtolower($value), strtolower($conditionData[1])) !== false) {
+                } elseif ($conditionData[0] === 'contain') {
+                    if (strpos($value, $conditionData[1]) !== false) {
                         continue;
                     }
                     return false;
@@ -573,7 +573,7 @@ class ObjectStorage
                                         $result[$whereKey] = [];
                                     }
                                     $whereOperator = isset($whereItem[2]) ? $whereItem[2] : 'equal';
-                                    if (array_search($whereOperator, ['search', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
+                                    if (array_search($whereOperator, ['equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith', 'contain']) === false) {
                                         throw new \InvalidArgumentException('Invalid where operator ' . $whereOperator . '.');
                                     }
                                     if (is_string($whereValue)) {
