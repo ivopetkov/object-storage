@@ -252,6 +252,8 @@ class ObjectStorage
         $filesToDelete = [];
         $emptyOpenedFiles = []; // opened but no content set
 
+        $logStorageAccess = isset($this->internalStorageAccessLog);
+
         $encodeMetaData = function ($metadata) {
             return "content-type:json\n\n" . json_encode($metadata);
         };
@@ -333,9 +335,12 @@ class ObjectStorage
             return true;
         };
 
-        $prepareFileForWriting = function ($filename) use (&$filePointers, &$emptyOpenedFiles) {
+        $prepareFileForWriting = function ($filename) use (&$filePointers, &$emptyOpenedFiles, $logStorageAccess) {
             if (isset($filePointers[$filename])) {
                 return;
+            }
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for writing.'];
             }
             if (is_dir($filename)) {
                 throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable (dir with the same name exists).');
@@ -343,9 +348,18 @@ class ObjectStorage
             if ($this->createFileDirIfNotExists($filename) === false) {
                 throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable (cannot create dir).');
             }
-            $getFilePointer = function () use ($filename, &$emptyOpenedFiles) {
+            $getFilePointer = function () use ($filename, &$emptyOpenedFiles, $logStorageAccess) {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['clearstatcache', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for writing.'];
+                }
                 clearstatcache(false, $filename);
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for writing.'];
+                }
                 $isNew = !is_file($filename);
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['fopen', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for writing.'];
+                }
                 $filePointer = fopen($filename, "c+");
                 if ($filePointer !== false) {
                     $flockResult = flock($filePointer, LOCK_EX | LOCK_NB);
@@ -377,11 +391,17 @@ class ObjectStorage
             }
         };
 
-        $prepareFileForReading = function ($filename, $required = false) use (&$filePointers) {
+        $prepareFileForReading = function ($filename, $required = false) use (&$filePointers, $logStorageAccess) {
             if (isset($filePointers[$filename])) {
                 return true;
             }
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for reading.'];
+            }
             if (is_file($filename)) {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['is_readable', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for reading.'];
+                }
                 if (!is_readable($filename)) {
                     throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not readable.');
                 }
@@ -393,6 +413,10 @@ class ObjectStorage
                 $isParentDirReadable = false;
                 for ($i = 1; $i < 100; $i++) {
                     $dirToCheck = dirname($filename, $i);
+                    if ($logStorageAccess) {
+                        $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dirToCheck), 'Prepare dir for reading.'];
+                        $this->internalStorageAccessLog[] = ['is_readable', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dirToCheck), 'Prepare dir for reading.'];
+                    }
                     if (is_dir($dirToCheck) && is_readable($dirToCheck)) {
                         $isParentDirReadable = true;
                         break;
@@ -442,7 +466,7 @@ class ObjectStorage
             }
         };
 
-        $getFileContent = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
+        $getFileContent = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles, $logStorageAccess) {
             if (isset($filesToDelete[$filename])) {
                 return null;
             }
@@ -460,7 +484,13 @@ class ObjectStorage
                 fseek($filePointer, $pointerPosition);
                 return $content;
             } else {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Get file content.'];
+                }
                 if (is_file($filename)) {
+                    if ($logStorageAccess) {
+                        $this->internalStorageAccessLog[] = ['fopen', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Get file content.'];
+                    }
                     $filePointer = fopen($filename, "r");
                     flock($filePointer, LOCK_SH);
                     $content = '';
@@ -975,7 +1005,13 @@ class ObjectStorage
         unset($filePointers);
 
         foreach ($emptyOpenedFiles as $filename => $one) {
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Remove empty files.'];
+            }
             if (is_file($filename)) {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['unlink', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Remove empty files.'];
+                }
                 unlink($filename);
             }
         }
@@ -983,7 +1019,13 @@ class ObjectStorage
 
         if ($thrownException === null) {
             foreach ($filesToDelete as $filename => $one) {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Remove deleted files.'];
+                }
                 if (is_file($filename)) {
+                    if ($logStorageAccess) {
+                        $this->internalStorageAccessLog[] = ['unlink', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Remove deleted files.'];
+                    }
                     unlink($filename);
                 }
             }
@@ -1007,13 +1049,20 @@ class ObjectStorage
     {
         $pathinfo = pathinfo($filename);
         if (isset($pathinfo['dirname']) && $pathinfo['dirname'] !== '.') {
+            $logStorageAccess = isset($this->internalStorageAccessLog);
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $pathinfo['dirname']), 'Create file dir.'];
+            }
             if (is_dir($pathinfo['dirname'])) {
                 return true;
-            } elseif (is_file($pathinfo['dirname'])) {
-                return false;
-            } else {
-                return $this->createDirIfNotExists($pathinfo['dirname']);
             }
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $pathinfo['dirname']), 'Create file dir.'];
+            }
+            if (is_file($pathinfo['dirname'])) {
+                return false;
+            }
+            return $this->createDirIfNotExists($pathinfo['dirname']);
         }
         return false;
     }
@@ -1027,12 +1076,19 @@ class ObjectStorage
      */
     private function createDirIfNotExists(string $dir): bool
     {
+        $logStorageAccess = isset($this->internalStorageAccessLog);
+        if ($logStorageAccess) {
+            $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Create dir.'];
+        }
         if (!is_dir($dir)) {
             try {
                 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
                     restore_error_handler();
                     throw new \IvoPetkov\ObjectStorage\ErrorException($errstr, 0, $errno, $errfile, $errline);
                 });
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['mkdir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Create dir.'];
+                }
                 $result = mkdir($dir, 0777, true);
                 restore_error_handler();
                 return (bool) $result;
@@ -1111,7 +1167,7 @@ class ObjectStorage
                 }
             }
             if ($logStorageAccess) {
-                $this->internalStorageAccessLog[] = ['is_file', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir . $filename)];
+                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir . $filename), 'Get files list.'];
             }
             if (is_file($dir . $filename)) {
                 return [$filename];
@@ -1152,12 +1208,12 @@ class ObjectStorage
             $result = [];
             if ($logStorageAccess) {
                 if ($checkDir) {
-                    $this->internalStorageAccessLog[] = ['is_dir', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir)];
+                    $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Get files list.'];
                 }
             }
             if (!$checkDir || is_dir($dir)) {
                 if ($logStorageAccess) {
-                    $this->internalStorageAccessLog[] = ['scandir', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir)];
+                    $this->internalStorageAccessLog[] = ['scandir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Get files list.'];
                 }
                 $list = scandir($dir);
                 if (is_array($list)) {
@@ -1179,7 +1235,7 @@ class ObjectStorage
                                 continue;
                             }
                             if ($logStorageAccess) {
-                                $this->internalStorageAccessLog[] = ['is_dir', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir . $filename)];
+                                $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir . $filename), 'Get files list.'];
                             }
                             if (is_dir($dir . $filename)) {
                                 if ($recursive === true) {
