@@ -283,12 +283,7 @@ class ObjectStorage
 
         $areWhereConditionsMet = function ($value, $conditions) {
             foreach ($conditions as $conditionData) {
-                if ($conditionData[0] === '==') {
-                    if ($value === $conditionData[1]) {
-                        continue;
-                    }
-                    return false;
-                } elseif ($conditionData[0] === 'equal') {
+                if ($conditionData[0] === 'equal') {
                     if ($value === $conditionData[1]) {
                         continue;
                     }
@@ -577,8 +572,8 @@ class ObjectStorage
                                     if (!isset($result[$whereKey])) {
                                         $result[$whereKey] = [];
                                     }
-                                    $whereOperator = isset($whereItem[2]) ? $whereItem[2] : '==';
-                                    if (array_search($whereOperator, ['==', 'regexp', 'search', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
+                                    $whereOperator = isset($whereItem[2]) ? $whereItem[2] : 'equal';
+                                    if (array_search($whereOperator, ['regexp', 'search', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
                                         throw new \InvalidArgumentException('Invalid where operator ' . $whereOperator . '.');
                                     }
                                     if (is_string($whereValue)) {
@@ -610,7 +605,7 @@ class ObjectStorage
                             if (isset($result['key'])) {
                                 foreach ($result['key'] as $whereKeyData) {
                                     $whereOperator = $whereKeyData[0];
-                                    if ($whereOperator === '==' || $whereOperator === 'equal') {
+                                    if ($whereOperator === 'equal') {
                                         if (!$this->validate($whereKeyData[1])) {
                                             throw new \InvalidArgumentException('The key value in where data is not valid.');
                                         }
@@ -862,7 +857,7 @@ class ObjectStorage
                     if (isset($where['key'])) {
                         $temp = [];
                         foreach ($where['key'] as $keyData) {
-                            if ($keyData[0] === '==' || $keyData[0] === 'equal') {
+                            if ($keyData[0] === 'equal') {
                                 $getFilesOptions['equal'][] = $keyData[1];
                             } elseif ($keyData[0] === 'startWith') {
                                 $getFilesOptions['startWith'][] = $keyData[1];
