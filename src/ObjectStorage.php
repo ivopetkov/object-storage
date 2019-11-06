@@ -174,7 +174,7 @@ class ObjectStorage
      *    // Finds objects by regular expression 
      *    [
      *        'where' => [
-     *            ['key', '^prefix1\/', 'regexp']
+     *            ['key', '^prefix1\/', 'regExp']
      *        ],
      *        'result' => ['key', 'body', 'metadata.title']
      *    ]
@@ -293,7 +293,7 @@ class ObjectStorage
                         continue;
                     }
                     return false;
-                } elseif ($conditionData[0] === 'regexp' || $conditionData[0] === 'regExp') {
+                } elseif ($conditionData[0] === 'regExp') {
                     if (preg_match('/' . $conditionData[1] . '/', $value) === 1) {
                         continue;
                     }
@@ -573,7 +573,7 @@ class ObjectStorage
                                         $result[$whereKey] = [];
                                     }
                                     $whereOperator = isset($whereItem[2]) ? $whereItem[2] : 'equal';
-                                    if (array_search($whereOperator, ['regexp', 'search', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
+                                    if (array_search($whereOperator, ['search', 'equal', 'notEqual', 'regExp', 'notRegExp', 'startWith', 'notStartWith', 'endWith', 'notEndWith']) === false) {
                                         throw new \InvalidArgumentException('Invalid where operator ' . $whereOperator . '.');
                                     }
                                     if (is_string($whereValue)) {

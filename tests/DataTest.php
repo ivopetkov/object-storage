@@ -758,7 +758,7 @@ objects/prefix2/datac: C
         $result = $objectStorage->search(
             [
                 'where' => [
-                    ['key', '^prefix1\/', 'regexp']
+                    ['key', '^prefix1\/', 'regExp']
                 ],
                 'result' => ['key', 'body']
             ]

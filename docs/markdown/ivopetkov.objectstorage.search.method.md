@@ -28,7 +28,7 @@ public array search ( array $parameters )
 // Finds objects by regular expression
 [
 'where' => [
-['key', '^prefix1\/', 'regexp']
+['key', '^prefix1\/', 'regExp']
 ],
 'result' => ['key', 'body', 'metadata.title']
 ]
