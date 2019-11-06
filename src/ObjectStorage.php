@@ -285,47 +285,57 @@ class ObjectStorage
             foreach ($conditions as $conditionData) {
                 if ($conditionData[0] === '==') {
                     if ($value === $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'equal') {
                     if ($value === $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'notEqual') {
                     if ($value !== $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'regexp' || $conditionData[0] === 'regExp') {
                     if (preg_match('/' . $conditionData[1] . '/', $value) === 1) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'notRegExp') {
                     if (preg_match('/' . $conditionData[1] . '/', $value) === 0) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'startWith') {
                     if (substr($value, 0, strlen($conditionData[1])) === $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'notStartWith') {
                     if (substr($value, 0, strlen($conditionData[1])) !== $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'endWith') {
                     if (substr($value, -strlen($conditionData[1])) === $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'notEndWith') {
                     if (substr($value, -strlen($conditionData[1])) !== $conditionData[1]) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 } elseif ($conditionData[0] === 'search') {
                     if (strpos(strtolower($value), strtolower($conditionData[1])) !== false) {
-                        return true;
+                        continue;
                     }
+                    return false;
                 }
             }
-            return false;
+            return true;
         };
 
         $prepareFileForWriting = function ($filename) use (&$filePointers, &$emptyOpenedFiles) {
@@ -572,23 +582,25 @@ class ObjectStorage
                                         throw new \InvalidArgumentException('Invalid where operator ' . $whereOperator . '.');
                                     }
                                     if (is_string($whereValue)) {
+                                        if (!isset($whereValue[0])) {
+                                            throw new \InvalidArgumentException('The operator ' . $whereOperator . ' value cannot be empty!');
+                                        }
                                         $result[$whereKey][] = [$whereOperator, $whereValue];
                                         $valid = true;
-                                    } elseif (is_array($whereValue)) {
-                                        $valid = true;
-                                        foreach ($whereValue as $whereValueItem) {
-                                            if (!is_string($whereValueItem)) {
-                                                $valid = false;
-                                                break;
-                                            }
-                                        }
-                                        if ($valid) {
-                                            $temp = array_unique($whereValue);
-                                            foreach ($temp as $whereItemValue) {
-                                                $result[$whereKey][] = [$whereOperator, $whereItemValue];
-                                            }
-                                        }
                                     }
+                                    // removed support for multiple values
+                                    //  elseif (is_array($whereValue)) {
+                                    //     $valid = true;
+                                    //     foreach ($whereValue as $whereValueItem) {
+                                    //         if (!is_string($whereValueItem)) {
+                                    //             $valid = false;
+                                    //             break;
+                                    //         }
+                                    //     }
+                                    //     if ($valid) {
+                                    //         $result[$whereKey] = [$whereOperator, array_unique($whereValue)];
+                                    //     }
+                                    // }
                                 }
                                 if (!$valid) {
                                     throw new \InvalidArgumentException('Where data not valid.');
@@ -840,35 +852,34 @@ class ObjectStorage
                     $whereKeys = [];
                     $whereMetadataKeys = [];
 
-                    $whereKeysPrepared = false;
+                    $getFilesOptions = [
+                        'equal' => [],
+                        'notEqual' => [],
+                        'startWith' => [],
+                        'notStartWith' => [],
+                    ];
+
                     if (isset($where['key'])) {
-                        $whereKeysPrepared = true;
+                        $temp = [];
                         foreach ($where['key'] as $keyData) {
                             if ($keyData[0] === '==' || $keyData[0] === 'equal') {
-                                $whereKeys[] = $keyData[1];
+                                $getFilesOptions['equal'][] = $keyData[1];
                             } elseif ($keyData[0] === 'startWith') {
-                                $position = strrpos($keyData[1], '/');
-                                if ($position !== false) {
-                                    $dir = substr($keyData[1], 0, $position);
-                                    $files = $this->getFiles($this->objectsDir . $dir . '/', true, $limit !== null ? ($limit - sizeof($whereKeys)) : null);
-                                    foreach ($files as $filename) {
-                                        $whereKeys[] = $dir . '/' . $filename;
-                                    }
-                                } else {
-                                    $whereKeysPrepared = false;
-                                    break;
-                                }
+                                $getFilesOptions['startWith'][] = $keyData[1];
+                            } elseif ($keyData[0] === 'notEqual') {
+                                $getFilesOptions['notEqual'][] = $keyData[1];
+                            } elseif ($keyData[0] === 'notStartWith') {
+                                $getFilesOptions['notStartWith'][] = $keyData[1];
                             } else {
-                                $whereKeysPrepared = false;
-                                break;
+                                $temp[] = $keyData;
                             }
                         }
+                        $where['key'] = $temp;
+                        unset($temp);
                     }
-                    if ($whereKeysPrepared) {
-                        $whereKeys = array_unique($whereKeys);
-                    } else {
-                        $whereKeys = $this->getFiles($this->objectsDir, true, $limit);
-                    }
+
+                    $whereKeys = $this->getFiles($this->objectsDir, true, $limit, $getFilesOptions);
+
                     foreach ($where as $whereKey => $whereValue) {
                         if (substr($whereKey, 0, 9) === 'metadata.') {
                             $whereMetadataKeys[substr($whereKey, 9)] = $whereValue;
@@ -889,6 +900,7 @@ class ObjectStorage
 
                     $functions[$index] = function () use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $decodeMetadata, $areWhereConditionsMet) {
                         $result = [];
+
                         foreach ($whereKeys as $key) {
 
                             $objectResult = [];
@@ -1044,39 +1056,162 @@ class ObjectStorage
      * @param string $dir The directory name.
      * @param boolean $recursive If TRUE all files in subdirectories will be returned too.
      * @param int|null $limit Maximum number of files to return.
+     * @param array $options Available values: equal, notEqual, startWith, notStartWith
      * @return array An array containing list of all files in the directory specified.
      */
-    private function getFiles(string $dir, bool $recursive = false, $limit = null): array
+    private function getFiles(string $dir, bool $recursive = false, $limit = null, array $options = []): array
     {
-        if ($limit === 0) {
-            return [];
+        $logStorageAccess = isset($this->internalStorageAccessLog);
+        $keyPrefix = '';
+        $equal = $options['equal'];
+        if (!empty($equal)) {
+            $equal = array_unique($equal);
+            if (sizeof($equal) > 1) { // impossible case
+                return [];
+            }
+            $equal = array_values($equal);
         }
-        $result = [];
-        if (is_dir($dir)) {
-            $list = scandir($dir);
-            if (is_array($list)) {
-                foreach ($list as $filename) {
-                    if ($filename != '.' && $filename != '..') {
-                        if (is_dir($dir . $filename)) {
-                            if ($recursive === true) {
-                                $dirResult = $this->getFiles($dir . $filename . '/', true, $limit !== null ? ($limit - sizeof($result)) : null);
-                                if (!empty($dirResult)) {
-                                    foreach ($dirResult as $index => $value) {
-                                        $dirResult[$index] = $filename . '/' . $value;
-                                    }
-                                    $result = array_merge($result, $dirResult);
+        $startWith = $options['startWith'];
+        if (!empty($startWith)) {
+            $startWith = array_values(array_unique($startWith));
+            $isLessSpecific = function ($index, $prefix) use ($startWith) {
+                foreach ($startWith as $_index => $_prefix) {
+                    if ($_index !== $index) {
+                        if (strpos($prefix, $_prefix) === 0) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+            $lessSpecific = [];
+            foreach ($startWith as $index => $prefix) {
+                if ($isLessSpecific($index, $prefix)) {
+                    $lessSpecific[] = $prefix;
+                }
+            }
+            $startWith = array_diff($startWith, $lessSpecific);
+            if (sizeof($startWith) > 1) { // impossible case
+                return [];
+            }
+            $startWith = array_values($startWith);
+        }
+        $notEqual = $options['notEqual'];
+        $notStartWith = $options['notStartWith'];
+        if (isset($equal[0])) {
+            $filename = $equal[0];
+            if (isset($startWith[0])) {
+                if (strpos($filename, $startWith[0]) !== 0) {
+                    return [];
+                }
+            }
+            foreach ($notEqual as $_notEqual) {
+                if ($filename === $_notEqual) {
+                    return [];
+                }
+            }
+            foreach ($notStartWith as $_notStartWith) {
+                if (strpos($filename, $_notStartWith) === 0) {
+                    return [];
+                }
+            }
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_file', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir . $filename)];
+            }
+            if (is_file($dir . $filename)) {
+                return [$filename];
+            } else {
+                return [];
+            }
+        }
+        if (isset($startWith[0])) {
+            foreach ($notStartWith as $_notStartWith) {
+                if (strpos($startWith[0], $_notStartWith) === 0) { // confict with notStartWith
+                    return [];
+                }
+            }
+            $separatorIndex = strrpos($startWith[0], '/'); // optimize dir access (start with a child dir if found in the key)
+            if ($separatorIndex !== false) {
+                if ($separatorIndex === 0) { // cannot start with /
+                    return [];
+                }
+                $keyPrefix = substr($startWith[0], 0, $separatorIndex) . '/';
+                $dir .= $keyPrefix;
+            }
+            if (!empty($notStartWith)) { // remove not needed prefixes (outside the startWith)
+                $temp = [];
+                foreach ($notStartWith as $_notStartWith) {
+                    $index = strpos($_notStartWith, $startWith[0]);
+                    if ($index === 0) {
+                        $temp[] = $_notStartWith;
+                    }
+                }
+                $notStartWith = $temp;
+            }
+        }
+
+        $getFiles = function (string $dir, bool $checkDir = true, bool $recursive = false, $limit = null, string $keyPrefix) use (&$getFiles, $logStorageAccess, $notEqual, $startWith, $notStartWith) {
+            if ($limit === 0) {
+                return [];
+            }
+            $result = [];
+            if ($logStorageAccess) {
+                if ($checkDir) {
+                    $this->internalStorageAccessLog[] = ['is_dir', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir)];
+                }
+            }
+            if (!$checkDir || is_dir($dir)) {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['scandir', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir)];
+                }
+                $list = scandir($dir);
+                if (is_array($list)) {
+                    foreach ($list as $filename) {
+                        if ($filename != '.' && $filename != '..') {
+                            if (isset($startWith[0])) { // can be only one
+                                if (strpos($keyPrefix . $filename, $startWith[0]) !== 0) {
+                                    continue;
                                 }
                             }
-                        } else {
-                            $result[] = $filename;
-                            if ($limit !== null && $limit === sizeof($result)) {
-                                break;
+                            $continue = false;
+                            foreach ($notStartWith as $_notStartWith) {
+                                if (strpos($keyPrefix . $filename, $_notStartWith) === 0) {
+                                    $continue = true;
+                                    break;
+                                }
+                            }
+                            if ($continue) {
+                                continue;
+                            }
+                            if ($logStorageAccess) {
+                                $this->internalStorageAccessLog[] = ['is_dir', str_replace($this->objectsDir, 'OBJECTSDIR/', $dir . $filename)];
+                            }
+                            if (is_dir($dir . $filename)) {
+                                if ($recursive === true) {
+                                    $result = array_merge($result, $getFiles($dir . $filename . '/', false, true, $limit !== null ? ($limit - sizeof($result)) : null, $keyPrefix . $filename . '/'));
+                                }
+                            } else {
+                                $continue = false;
+                                foreach ($notEqual as $_notEqual) {
+                                    if ($keyPrefix . $filename === $_notEqual) {
+                                        $continue = true;
+                                        break;
+                                    }
+                                }
+                                if ($continue) {
+                                    continue;
+                                }
+                                $result[] = $keyPrefix . $filename;
+                                if ($limit !== null && $limit === sizeof($result)) {
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        return $result;
+            return $result;
+        };
+        return $getFiles($dir, true, $recursive, $limit, $keyPrefix);
     }
 }

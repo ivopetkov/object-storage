@@ -137,5 +137,4 @@ class ObjectStorageTestCase extends PHPUnit\Framework\TestCase
         $this->lockedFiles[$index] = fopen($filename, "c+");
         flock($this->lockedFiles[$index], LOCK_EX | LOCK_NB);
     }
-
 }

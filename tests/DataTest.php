@@ -93,7 +93,8 @@ objects/books/3000000000: book 3000000000 content in pdf format
         $result = $objectStorage->search(
             [
                 'where' => [
-                    ['key', ['book-1449392776', 'book-1430268158']]
+                    ['key', 'book-1449392776']
+                    //['key', ['book-1449392776', 'book-1430268158']]
                 ],
                 'result' => ['key', 'body', 'metadata.title', 'metadata.year']
             ]
@@ -105,13 +106,6 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 'body' => 'book 1449392776 content in pdf format',
                 'metadata.title' => 'Programming PHP',
                 'metadata.year' => '2013',
-            ),
-            1 =>
-            array(
-                'key' => 'book-1430268158',
-                'body' => 'book 1430268158 content in pdf format',
-                'metadata.title' => 'PHP for Absolute Beginners',
-                'metadata.year' => '2014',
             ),
         ));
         $this->assertTrue($this->checkState(
@@ -1040,6 +1034,7 @@ objects/data1: body1'));
                 'result' => ['key']
             ]
         );
+
         $this->assertTrue($result === array(
             0 =>
             array(
