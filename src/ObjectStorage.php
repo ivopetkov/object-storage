@@ -1192,8 +1192,7 @@ class ObjectStorage
             if (!empty($notStartWith)) { // remove not needed prefixes (outside the startWith)
                 $temp = [];
                 foreach ($notStartWith as $_notStartWith) {
-                    $index = strpos($_notStartWith, $startWith[0]);
-                    if ($index === 0) {
+                    if (strpos($_notStartWith, $startWith[0]) === 0) {
                         $temp[] = $_notStartWith;
                     }
                 }
