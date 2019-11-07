@@ -899,7 +899,11 @@ class ObjectStorage
                                 $temp[] = $keyData;
                             }
                         }
-                        $where['key'] = $temp;
+                        if (empty($temp)) {
+                            unset($where['key']);
+                        } else {
+                            $where['key'] = $temp;
+                        }
                         unset($temp);
                     }
 
@@ -1200,7 +1204,63 @@ class ObjectStorage
             }
         }
 
-        $getFiles = function (string $dir, bool $checkDir = true, bool $recursive = false, $limit = null, string $keyPrefix) use (&$getFiles, $logStorageAccess, $notEqual, $startWith, $notStartWith) {
+        $buildPrefixesIndex = function (array $prefixes) {
+            $getIndex = function (array $prefixes) use (&$getIndex) {
+                $index = [];
+                foreach ($prefixes as $prefix) {
+                    $length = $prefix[0] + 1;
+                    $start = substr($prefix[1], 0, $length);
+                    if (!isset($index[$start])) {
+                        $index[$start] = [];
+                    }
+                    $index[$start][] = [$length, $prefix[1]];
+                }
+                $keysToRemove = [];
+                $keysToAdd = [];
+                foreach ($index as $k => $indexPrefixes) {
+                    if (sizeof($indexPrefixes) === 1) {
+                        $keysToRemove[] = $k;
+                        $keysToAdd[$indexPrefixes[0][1]] = true;
+                    } else {
+                        $index[$k] = $getIndex($indexPrefixes);
+                        if (sizeof($index[$k]) === 1) {
+                            $keysToRemove[] = $k;
+                            $keysToAdd[key($index[$k])] = current($index[$k]);
+                        }
+                    }
+                }
+                foreach ($keysToRemove as $keyToRemove) {
+                    unset($index[$keyToRemove]);
+                }
+                foreach ($keysToAdd as $keyToAdd => $value) {
+                    $index[$keyToAdd] = $value;
+                }
+                return $index;
+            };
+            foreach ($prefixes as $i => $prefix) {
+                $prefixes[$i] = [0, $prefix];
+            }
+            return $getIndex($prefixes);
+        };
+
+        $existsInPrefixesIndex = function (string $prefix, array $index) use (&$existsInPrefixesIndex) {
+            foreach ($index as $key => $value) {
+                if (strpos($prefix, $key) === 0) {
+                    if ($value === true) {
+                        return true;
+                    } else {
+                        if ($existsInPrefixesIndex($prefix, $value)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        };
+
+        $notStartWithPrefixesIndex = empty($notStartWith) ? null : $buildPrefixesIndex($notStartWith);
+
+        $getFiles = function (string $dir, bool $checkDir = true, bool $recursive = false, $limit = null, string $keyPrefix) use (&$getFiles, $logStorageAccess, $notEqual, $startWith, $notStartWithPrefixesIndex, &$existsInPrefixesIndex) {
             if ($limit === 0) {
                 return [];
             }
@@ -1223,15 +1283,10 @@ class ObjectStorage
                                     continue;
                                 }
                             }
-                            $continue = false;
-                            foreach ($notStartWith as $_notStartWith) {
-                                if (strpos($keyPrefix . $filename, $_notStartWith) === 0) {
-                                    $continue = true;
-                                    break;
+                            if ($notStartWithPrefixesIndex !== null) {
+                                if ($existsInPrefixesIndex($keyPrefix . $filename, $notStartWithPrefixesIndex)) {
+                                    continue;
                                 }
-                            }
-                            if ($continue) {
-                                continue;
                             }
                             if ($logStorageAccess) {
                                 $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir . $filename), 'Get files list.'];
