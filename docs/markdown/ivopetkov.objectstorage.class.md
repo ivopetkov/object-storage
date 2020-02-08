@@ -26,6 +26,12 @@ Enables storing and manipulating data objects in the directory specified.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: Array containing the results for the commands.
 
+##### public bool [exists](ivopetkov.objectstorage.exists.method.md) ( array $parameters )
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Checks if the specified object exists.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: Returns TRUE if the object exists, FALSE otherwise.
+
 ##### public array|null [get](ivopetkov.objectstorage.get.method.md) ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves object data for a specified key.
