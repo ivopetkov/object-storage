@@ -87,6 +87,19 @@ class ObjectStorage
     }
 
     /**
+     * Checks if the specified object exists.
+     * 
+     * @param array $parameters Data in the following format: ['key' => 'example1']
+     * @return bool Returns TRUE if the object exists, FALSE otherwise.
+     * @throws \IvoPetkov\ObjectStorage\ErrorException
+     * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
+     */
+    public function exists(array $parameters): bool
+    {
+        return $this->executeCommand([$parameters], 'exists')[0];
+    }
+
+    /**
      * Saves object data for a specified key.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'body' => 'body1', 'metadata.year' => '2000']. Specifying metadata.* will bulk remove/update all previous metadata.
@@ -505,6 +518,23 @@ class ObjectStorage
             }
         };
 
+        $fileExists = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles, $logStorageAccess) {
+            if (isset($filesToDelete[$filename])) {
+                return false;
+            }
+            if (isset($emptyOpenedFiles[$filename])) {
+                return false;
+            }
+            if (isset($filePointers[$filename])) {
+                return true;
+            } else {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'File exists.'];
+                }
+                return is_file($filename);
+            }
+        };
+
         $deleteFile = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles) {
             if (isset($filePointers[$filename])) {
                 $filePointer = $filePointers[$filename];
@@ -859,6 +889,11 @@ class ObjectStorage
                             }
                             return $objectResult;
                         }
+                    };
+                } elseif ($command === 'exists') {
+                    $key = $getProperty('key', true);
+                    $functions[$index] = function () use ($key, $fileExists) {
+                        return $fileExists($this->objectsDir . $key);
                     };
                 } elseif ($command === 'search') {
                     $where = $getProperty('where');

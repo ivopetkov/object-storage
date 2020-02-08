@@ -205,6 +205,42 @@ objects/books/3000000000: book 3000000000 content in pdf format
 '
         ));
 
+        // Exists
+        $result = $objectStorage->exists(
+            [
+                'key' => 'book-1449392776'
+            ]
+        );
+        $this->assertTrue($result === true);
+        $result = $objectStorage->exists(
+            [
+                'key' => 'book-1449392776-missing'
+            ]
+        );
+        $this->assertTrue($result === false);
+        $this->assertTrue($this->checkState(
+            '534393dff9b252fcc411e1c2b8e501ed
+metadata/book-1430260319: content-type:json
+
+{"title":"PHP Objects, Patterns, and Practice","authors":"[\\"Matt Zandstra\\"]","year":"2013"}
+metadata/book-1430268158: content-type:json
+
+{"title":"PHP for Absolute Beginners","authors":"[\\"Jason Lengstorf\\", \\"Thomas Blom Hansen\\"]","year":"2014"}
+metadata/book-1449392776: content-type:json
+
+{"title":"Programming PHP","authors":"[\\"Kevin Tatroe\\", \\"Peter MacIntyre\\", \\"Rasmus Lerdorf\\"]","year":"2013","rating":"3.4"}
+metadata/books/3000000000: content-type:json
+
+{"year":"2014"}
+objects/book-1000000000: 
+objects/book-1430260319: book 1430260319 content in pdf format
+objects/book-1430268158: book 1430268158 content in pdf format
+objects/book-1449392776: book 1449392776 content in pdf format
+objects/book-2000000000: book 2000000000 content in pdf format
+objects/books/3000000000: book 3000000000 content in pdf format
+'
+        ));
+
 
         // Set
         $objectStorage->set(
@@ -599,6 +635,10 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     'result' => ['key', 'body']
                 ],
                 [
+                    'command' => 'exists',
+                    'key' => 'product-5'
+                ],
+                [
                     'command' => 'set',
                     'key' => 'product-5',
                     'body' => 'product body 2',
@@ -613,6 +653,10 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 ],
                 [
                     'command' => 'delete',
+                    'key' => 'product-5'
+                ],
+                [
+                    'command' => 'exists',
                     'key' => 'product-5'
                 ],
                 [
@@ -659,25 +703,27 @@ objects/books/3000000000: book 3000000000 content in pdf format
                 'key' => 'product-5',
                 'body' => 'product body 1',
             ),
-            6 => null,
-            7 => array(
+            6 => true,
+            7 => null,
+            8 => array(
                 0 => array(
                     'key' => 'product-5',
                     'body' => 'product body 2',
                     'metadata.ivo' => '2011',
                 ),
             ),
-            8 => null,
-            9 => array(),
-            10 => null,
-            11 => array(
+            9 => null,
+            10 => false,
+            11 => array(),
+            12 => null,
+            13 => array(
                 0 =>
                 array(
                     'key' => 'product-5',
                     'body' => 'product body 3',
                 ),
             ),
-            12 => array(
+            14 => array(
                 0 =>
                 array(
                     'key' => 'product-5',
@@ -689,8 +735,8 @@ objects/books/3000000000: book 3000000000 content in pdf format
                     'body' => '[5][6]',
                 ),
             ),
-            13 => null,
-            14 => null,
+            15 => null,
+            16 => null,
         ));
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
 '));
@@ -875,6 +921,13 @@ objects/emptydata:
         );
         $this->assertTrue($result === []);
 
+        $result = $objectStorage->exists(
+            [
+                'key' => 'emptydata'
+            ]
+        );
+        $this->assertTrue($result === true);
+
         $objectStorage->delete(
             [
                 'key' => 'emptydata'
@@ -889,6 +942,13 @@ objects/emptydata:
             ]
         );
         $this->assertTrue($result === null);
+
+        $result = $objectStorage->exists(
+            [
+                'key' => 'emptydata'
+            ]
+        );
+        $this->assertTrue($result === false);
     }
 
     /**
@@ -1192,6 +1252,60 @@ objects/data1: body1'));
             0 => null,
             1 => null,
             2 => null
+        ));
+
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
+'));
+    }
+
+    /**
+     * 
+     */
+    public function testExists()
+    {
+        $objectStorage = $this->getInstance();
+        $result = $objectStorage->execute(
+            [
+                [
+                    'command' => 'exists',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'exists',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'exists',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'append',
+                    'key' => 'product-1',
+                    'body' => 'value'
+                ],
+                [
+                    'command' => 'exists',
+                    'key' => 'product-1'
+                ]
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 => false,
+            1 => null,
+            2 => true,
+            3 => null,
+            4 => false,
+            5 => null,
+            6 => true
         ));
 
         $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
