@@ -74,7 +74,7 @@ class ObjectStorage
     }
 
     /**
-     * Retrieves object data for a specified key.
+     * Retrieves object data for the specified key.
      * 
      * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
      * @return array|null An array containing the result data if existent, NULL otherwise.
