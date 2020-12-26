@@ -76,7 +76,7 @@ class ObjectStorage
     /**
      * Retrieves object data for the specified key.
      * 
-     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'bodyLength', 'metadata.year']]
      * @return array|null An array containing the result data if existent, NULL otherwise.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
@@ -518,6 +518,34 @@ class ObjectStorage
             }
         };
 
+        $getFileSize = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles, $logStorageAccess) {
+            if (isset($filesToDelete[$filename])) {
+                return null;
+            }
+            if (isset($emptyOpenedFiles[$filename])) {
+                return null;
+            }
+            if (isset($filePointers[$filename])) {
+                $filePointer = $filePointers[$filename];
+                $pointerPosition = ftell($filePointer);
+                fseek($filePointer, 0, SEEK_END);
+                $size = ftell($filePointer);
+                fseek($filePointer, $pointerPosition);
+                return $size;
+            } else {
+                if ($logStorageAccess) {
+                    $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Get file size.'];
+                }
+                if (is_file($filename)) {
+                    if ($logStorageAccess) {
+                        $this->internalStorageAccessLog[] = ['filesize', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Get file size.'];
+                    }
+                    return filesize($filename);
+                }
+                return null;
+            }
+        };
+
         $fileExists = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles, $logStorageAccess) {
             if (isset($filesToDelete[$filename])) {
                 return false;
@@ -855,6 +883,7 @@ class ObjectStorage
                     }
                     $metadataResultKeys = $getProperty('result.metadata.*');
                     $returnBody = array_search('body', $resultKeys) !== false;
+                    $returnBodyLength = array_search('bodyLength', $resultKeys) !== false;
                     $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
                     if ($returnBody) {
                         $prepareFileForReading($this->objectsDir . $key);
@@ -863,32 +892,50 @@ class ObjectStorage
                         $prepareFileForReading($this->metadataDir . $key);
                     }
 
-                    $functions[$index] = function () use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $getFileContent, $decodeMetadata) {
-                        $content = $getFileContent($this->objectsDir . $key);
-                        if ($content !== null) {
-                            $objectResult = [];
-                            if (array_search('key', $resultKeys) !== false) {
-                                $objectResult['key'] = $key;
+                    $functions[$index] = function () use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnBodyLength, $returnMetadata, $getFileContent, $getFileSize, $fileExists, $decodeMetadata) {
+                        if ($returnBody) {
+                            $content = $getFileContent($this->objectsDir . $key);
+                            if ($content === null) {
+                                return;
                             }
-                            if ($returnBody) {
-                                $objectResult['body'] = $content;
+                            if ($returnBodyLength) {
+                                $size = strlen($content);
                             }
-                            if ($returnMetadata) {
-                                $objectMetadata = $decodeMetadata($getFileContent($this->metadataDir . $key));
-                                if (array_search('metadata', $resultKeys) !== false) { // all metadata
-                                    if (is_array($objectMetadata)) {
-                                        foreach ($objectMetadata as $metadataKey => $metadataValue) {
-                                            $objectResult['metadata.' . $metadataKey] = $metadataValue;
-                                        }
-                                    }
-                                } elseif (!empty($metadataResultKeys)) { // requested keys
-                                    foreach ($metadataResultKeys as $metadataResultKey) {
-                                        $objectResult['metadata.' . $metadataResultKey] = isset($objectMetadata[$metadataResultKey]) ? $objectMetadata[$metadataResultKey] : '';
+                        } elseif ($returnBodyLength) {
+                            if (!$fileExists($this->objectsDir . $key)) {
+                                return;
+                            }
+                            $size = $getFileSize($this->objectsDir . $key);
+                        } else {
+                            if (!$fileExists($this->objectsDir . $key)) {
+                                return;
+                            }
+                        }
+                        $objectResult = [];
+                        if (array_search('key', $resultKeys) !== false) {
+                            $objectResult['key'] = $key;
+                        }
+                        if ($returnBody) {
+                            $objectResult['body'] = $content;
+                        }
+                        if ($returnBodyLength) {
+                            $objectResult['bodyLength'] = $size;
+                        }
+                        if ($returnMetadata) {
+                            $objectMetadata = $decodeMetadata($getFileContent($this->metadataDir . $key));
+                            if (array_search('metadata', $resultKeys) !== false) { // all metadata
+                                if (is_array($objectMetadata)) {
+                                    foreach ($objectMetadata as $metadataKey => $metadataValue) {
+                                        $objectResult['metadata.' . $metadataKey] = $metadataValue;
                                     }
                                 }
+                            } elseif (!empty($metadataResultKeys)) { // requested keys
+                                foreach ($metadataResultKeys as $metadataResultKey) {
+                                    $objectResult['metadata.' . $metadataResultKey] = isset($objectMetadata[$metadataResultKey]) ? $objectMetadata[$metadataResultKey] : '';
+                                }
                             }
-                            return $objectResult;
                         }
+                        return $objectResult;
                     };
                 } elseif ($command === 'exists') {
                     $key = $getProperty('key', true);
