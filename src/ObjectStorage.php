@@ -954,6 +954,7 @@ class ObjectStorage
                     $limit = $getProperty('limit');
                     $metadataResultKeys = $getProperty('result.metadata.*');
                     $returnBody = array_search('body', $resultKeys) !== false;
+                    $returnBodyLength = array_search('body.length', $resultKeys) !== false;
                     $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
 
                     $whereKeys = [];
@@ -1009,7 +1010,7 @@ class ObjectStorage
                         }
                     }
 
-                    $functions[$index] = function () use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $decodeMetadata, $areWhereConditionsMet) {
+                    $functions[$index] = function () use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnBodyLength, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $getFileSize, $decodeMetadata, $areWhereConditionsMet) {
                         $result = [];
 
                         foreach ($whereKeys as $key) {
@@ -1049,6 +1050,9 @@ class ObjectStorage
                             }
                             if ($returnBody) {
                                 $objectResult['body'] = $objectBody;
+                            }
+                            if ($returnBodyLength) {
+                                $objectResult['body.length'] = $returnBody ? strlen($objectBody) : $getFileSize($this->objectsDir . $key);
                             }
                             if ($returnMetadata) {
                                 if (array_search('metadata', $resultKeys) !== false) { // all metadata

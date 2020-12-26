@@ -1315,7 +1315,7 @@ objects/data1: body1'));
     /**
      * 
      */
-    public function testGetBodyLength()
+    public function testBodyLength()
     {
         $objectStorage = $this->getInstance();
         $result = $objectStorage->execute(
@@ -1350,8 +1350,10 @@ objects/data1: body1'));
                     'body' => 'product body 12'
                 ],
                 [
-                    'command' => 'get',
-                    'key' => 'product-1',
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'product-1']
+                    ],
                     'result' => ['key', 'body', 'body.length']
                 ],
                 [
@@ -1373,9 +1375,11 @@ objects/data1: body1'));
             5 => null,
             6 =>
             array(
-                'key' => 'product-1',
-                'body' => 'product body 12',
-                'body.length' => 15
+                array(
+                    'key' => 'product-1',
+                    'body' => 'product body 12',
+                    'body.length' => 15
+                )
             ),
             7 => null
         ));
