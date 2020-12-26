@@ -76,7 +76,7 @@ class ObjectStorage
     /**
      * Retrieves object data for the specified key.
      * 
-     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'bodyLength', 'metadata.year']]
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'body.length', 'metadata.year']]
      * @return array|null An array containing the result data if existent, NULL otherwise.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
@@ -883,7 +883,7 @@ class ObjectStorage
                     }
                     $metadataResultKeys = $getProperty('result.metadata.*');
                     $returnBody = array_search('body', $resultKeys) !== false;
-                    $returnBodyLength = array_search('bodyLength', $resultKeys) !== false;
+                    $returnBodyLength = array_search('body.length', $resultKeys) !== false;
                     $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
                     if ($returnBody) {
                         $prepareFileForReading($this->objectsDir . $key);
@@ -919,7 +919,7 @@ class ObjectStorage
                             $objectResult['body'] = $content;
                         }
                         if ($returnBodyLength) {
-                            $objectResult['bodyLength'] = $size;
+                            $objectResult['body.length'] = $size;
                         }
                         if ($returnMetadata) {
                             $objectMetadata = $decodeMetadata($getFileContent($this->metadataDir . $key));

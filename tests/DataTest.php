@@ -1323,7 +1323,7 @@ objects/data1: body1'));
                 [
                     'command' => 'get',
                     'key' => 'product-1',
-                    'result' => ['key', 'bodyLength']
+                    'result' => ['key', 'body.length']
                 ],
                 [
                     'command' => 'set',
@@ -1333,7 +1333,7 @@ objects/data1: body1'));
                 [
                     'command' => 'get',
                     'key' => 'product-1',
-                    'result' => ['key', 'bodyLength']
+                    'result' => ['key', 'body.length']
                 ],
                 [
                     'command' => 'delete',
@@ -1342,7 +1342,7 @@ objects/data1: body1'));
                 [
                     'command' => 'get',
                     'key' => 'product-1',
-                    'result' => ['key', 'bodyLength']
+                    'result' => ['key', 'body.length']
                 ],
                 [
                     'command' => 'set',
@@ -1352,7 +1352,7 @@ objects/data1: body1'));
                 [
                     'command' => 'get',
                     'key' => 'product-1',
-                    'result' => ['key', 'body', 'bodyLength']
+                    'result' => ['key', 'body', 'body.length']
                 ],
                 [
                     'command' => 'delete',
@@ -1366,7 +1366,7 @@ objects/data1: body1'));
             2 =>
             array(
                 'key' => 'product-1',
-                'bodyLength' => 14
+                'body.length' => 14
             ),
             3 => null,
             4 => null,
@@ -1375,7 +1375,7 @@ objects/data1: body1'));
             array(
                 'key' => 'product-1',
                 'body' => 'product body 12',
-                'bodyLength' => 15
+                'body.length' => 15
             ),
             7 => null
         ));
