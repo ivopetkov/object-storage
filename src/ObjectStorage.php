@@ -76,7 +76,7 @@ class ObjectStorage
     /**
      * Retrieves object data for the specified key.
      * 
-     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'body.length', 'metadata.year']]
+     * @param array $parameters Data in the following format: ['key' => 'example1', 'result' => ['body', 'body.length', 'body.range(*,*)', 'metadata.year']]
      * @return array|null An array containing the result data if existent, NULL otherwise.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
@@ -175,21 +175,21 @@ class ObjectStorage
      *        'where' => [
      *            ['key', ['book-1449392776', 'book-1430268158']]
      *        ],
-     *        'result' => ['key', 'body', 'metadata.title']
+     *        'result' => ['key', 'body', 'body.length', 'body.range(*,*)', 'metadata.title']
      *    ]
      *    // Finds objects by metadata 
      *    [
      *        'where' => [
      *            ['metadata.year', '2013']
      *        ],
-     *        'result' => ['key', 'body', 'metadata.title']
+     *        'result' => ['key', 'body', 'body.length', 'body.range(*,*)', 'metadata.title']
      *    ]
      *    // Finds objects by regular expression 
      *    [
      *        'where' => [
      *            ['key', '^prefix1\/', 'regExp']
      *        ],
-     *        'result' => ['key', 'body', 'metadata.title']
+     *        'result' => ['key', 'body', 'body.length', 'body.range(*,*)', 'metadata.title']
      *    ]
      * @return array An array containing all matching objects.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
@@ -479,22 +479,42 @@ class ObjectStorage
             }
         };
 
-        $getFileContent = function ($filename) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles, $logStorageAccess) {
+        $getFileContent = function ($filename, $rangeStart = null, $rangeEnd = null) use (&$filePointers, &$filesToDelete, &$emptyOpenedFiles, $logStorageAccess) {
             if (isset($filesToDelete[$filename])) {
                 return null;
             }
             if (isset($emptyOpenedFiles[$filename])) {
                 return null;
             }
-            if (isset($filePointers[$filename])) {
-                $filePointer = $filePointers[$filename];
-                $pointerPosition = ftell($filePointer);
-                fseek($filePointer, 0);
+            $getContent = function ($filePointer, $start, $end) {
                 $content = '';
+                if ($start !== null) {
+                    fseek($filePointer, $start);
+                    if ($end !== null) {
+                        $maxLength = $end !== null ? $end - $start : null;
+                        $contentLength = 0;
+                        for ($length = 8192; $length <= $maxLength; $length += 8192) {
+                            $content .= fread($filePointer, $length);
+                            $contentLength = $length;
+                        }
+                        if ($contentLength < $maxLength) {
+                            $content .= fread($filePointer, $maxLength - $contentLength);
+                        }
+                        return $content;
+                    }
+                } else {
+                    fseek($filePointer, 0);
+                }
                 while (!feof($filePointer)) {
                     $content .= fread($filePointer, 8192);
                 }
-                fseek($filePointer, $pointerPosition);
+                return $content;
+            };
+            if (isset($filePointers[$filename])) {
+                $filePointer = $filePointers[$filename];
+                $pointerPosition = ftell($filePointer); // save the current pointer position
+                $content = $getContent($filePointer, $rangeStart, $rangeEnd);
+                fseek($filePointer, $pointerPosition); // restore pointer position
                 return $content;
             } else {
                 if ($logStorageAccess) {
@@ -506,10 +526,7 @@ class ObjectStorage
                     }
                     $filePointer = fopen($filename, "r");
                     flock($filePointer, LOCK_SH);
-                    $content = '';
-                    while (!feof($filePointer)) {
-                        $content .= fread($filePointer, 8192);
-                    }
+                    $content = $getContent($filePointer, $rangeStart, $rangeEnd);
                     flock($filePointer, LOCK_UN);
                     fclose($filePointer);
                     return $content;
@@ -735,6 +752,30 @@ class ObjectStorage
                                 return $result;
                             }
                         }
+                    } elseif ($name === 'result.body.range.*') {
+                        if (isset($commandData['result'])) {
+                            if (!is_array($commandData['result'])) {
+                                throw new \InvalidArgumentException('The result property must be of type array for item[' . $index . ']');
+                            }
+                            $resultKeys = isset($commandData['result']) ? $commandData['result'] : [];
+                            $result = [];
+                            foreach ($resultKeys as $resultCode) {
+                                if (substr($resultCode, 0, 10) === 'body.range') {
+                                    $rangeValue = substr($resultCode, 10);
+                                    $matches = null;
+                                    if (preg_match('/\(([0-9]*),([0-9]*)\)/', $rangeValue, $matches) === 1) {
+                                        $result[] = [$rangeValue, $matches[1], $matches[2]];
+                                    } elseif (preg_match('/\(([0-9]*)\)/', $rangeValue, $matches) === 1) {
+                                        $result[] = [$rangeValue, $matches[1], null];
+                                    } else {
+                                        throw new \InvalidArgumentException('The range value (' . $resultCode . ') is not valid for item[' . $index . ']');
+                                    }
+                                }
+                            }
+                            if (!empty($result)) {
+                                return $result;
+                            }
+                        }
                     } elseif ($name === 'limit') {
                         if (isset($commandData['limit'])) {
                             if (!is_int($commandData['limit'])) {
@@ -882,17 +923,19 @@ class ObjectStorage
                         $resultKeys = [];
                     }
                     $metadataResultKeys = $getProperty('result.metadata.*');
+                    $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
                     $returnBody = array_search('body', $resultKeys) !== false;
                     $returnBodyLength = array_search('body.length', $resultKeys) !== false;
-                    $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
-                    if ($returnBody) {
+                    $bodyRangeResultKeys = $getProperty('result.body.range.*');
+                    $returnBodyRanges = !empty($bodyRangeResultKeys);
+                    if ($returnBody || $returnBodyRanges) {
                         $prepareFileForReading($this->objectsDir . $key);
                     }
                     if ($returnMetadata) {
                         $prepareFileForReading($this->metadataDir . $key);
                     }
 
-                    $functions[$index] = function () use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnBodyLength, $returnMetadata, $getFileContent, $getFileSize, $fileExists, $decodeMetadata) {
+                    $functions[$index] = function () use ($key, $resultKeys, $metadataResultKeys, $returnBody, $returnBodyLength, $returnMetadata, $returnBodyRanges, $bodyRangeResultKeys, $getFileContent, $getFileSize, $fileExists, $decodeMetadata) {
                         if ($returnBody) {
                             $content = $getFileContent($this->objectsDir . $key);
                             if ($content === null) {
@@ -900,6 +943,10 @@ class ObjectStorage
                             }
                             if ($returnBodyLength) {
                                 $size = strlen($content);
+                            }
+                        } elseif ($returnBodyRanges) {
+                            if ($returnBodyLength) {
+                                $size = $getFileSize($this->objectsDir . $key);
                             }
                         } elseif ($returnBodyLength) {
                             if (!$fileExists($this->objectsDir . $key)) {
@@ -920,6 +967,13 @@ class ObjectStorage
                         }
                         if ($returnBodyLength) {
                             $objectResult['body.length'] = $size;
+                        }
+                        if ($returnBodyRanges) {
+                            foreach ($bodyRangeResultKeys as $range) {
+                                $start = $range[1];
+                                $end = $range[2];
+                                $objectResult['body.range' . $range[0]] = $returnBody ? ($end !== null ? substr($content, $start, $end - $start) : substr($content, $start)) : $getFileContent($this->objectsDir . $key, $start, $end);
+                            }
                         }
                         if ($returnMetadata) {
                             $objectMetadata = $decodeMetadata($getFileContent($this->metadataDir . $key));
@@ -953,9 +1007,11 @@ class ObjectStorage
                     }
                     $limit = $getProperty('limit');
                     $metadataResultKeys = $getProperty('result.metadata.*');
+                    $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
                     $returnBody = array_search('body', $resultKeys) !== false;
                     $returnBodyLength = array_search('body.length', $resultKeys) !== false;
-                    $returnMetadata = array_search('metadata', $resultKeys) !== false || !empty($metadataResultKeys);
+                    $bodyRangeResultKeys = $getProperty('result.body.range.*');
+                    $returnBodyRanges = !empty($bodyRangeResultKeys);
 
                     $whereKeys = [];
                     $whereMetadataKeys = [];
@@ -1002,7 +1058,7 @@ class ObjectStorage
                     $hasWhereBody = isset($where['body']);
 
                     foreach ($whereKeys as $key) {
-                        if ($returnBody || $hasWhereBody) {
+                        if ($returnBody || $returnBodyRanges || $hasWhereBody) {
                             $prepareFileForReading($this->objectsDir . $key);
                         }
                         if ($returnMetadata || $hasWhereMetadata) {
@@ -1010,7 +1066,7 @@ class ObjectStorage
                         }
                     }
 
-                    $functions[$index] = function () use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnBodyLength, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $getFileSize, $decodeMetadata, $areWhereConditionsMet) {
+                    $functions[$index] = function () use ($where, $whereKeys, $resultKeys, $metadataResultKeys, $returnBody, $returnBodyRanges, $bodyRangeResultKeys, $returnBodyLength, $returnMetadata, $hasWhereBody, $hasWhereMetadata, $whereMetadataKeys, $getFileContent, $getFileSize, $decodeMetadata, $areWhereConditionsMet) {
                         $result = [];
 
                         foreach ($whereKeys as $key) {
@@ -1053,6 +1109,13 @@ class ObjectStorage
                             }
                             if ($returnBodyLength) {
                                 $objectResult['body.length'] = $returnBody ? strlen($objectBody) : $getFileSize($this->objectsDir . $key);
+                            }
+                            if ($returnBodyRanges) {
+                                foreach ($bodyRangeResultKeys as $range) {
+                                    $start = $range[1];
+                                    $end = $range[2];
+                                    $objectResult['body.range' . $range[0]] = $returnBody || $hasWhereBody ? ($end !== null ? substr($objectBody, $start, $end - $start) : substr($objectBody, $start)) : $getFileContent($this->objectsDir . $key, $start, $end);
+                                }
                             }
                             if ($returnMetadata) {
                                 if (array_search('metadata', $resultKeys) !== false) { // all metadata

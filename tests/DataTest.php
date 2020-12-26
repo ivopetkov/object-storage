@@ -1391,6 +1391,96 @@ objects/data1: body1'));
     /**
      * 
      */
+    public function testBodyRange()
+    {
+        $objectStorage = $this->getInstance();
+        $result = $objectStorage->execute(
+            [
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'body.length']
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => '0123456789abcdef'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'body', 'body.range(0,12)', 'body.range(3)']
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'body.range(0,12)', 'body.range(3)']
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'product-1']
+                    ],
+                    'result' => ['key', 'body', 'body.range(0,12)', 'body.range(3)']
+                ],
+                [
+                    'command' => 'search',
+                    'where' => [
+                        ['key', 'product-1']
+                    ],
+                    'result' => ['key', 'body.range(0,12)', 'body.range(3)']
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-1'
+                ]
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 => NULL,
+            1 => NULL,
+            2 =>
+            array(
+                'key' => 'product-1',
+                'body' => '0123456789abcdef',
+                'body.range(0,12)' => '0123456789ab',
+                'body.range(3)' => '3456789abcdef',
+            ),
+            3 =>
+            array(
+                'key' => 'product-1',
+                'body.range(0,12)' => '0123456789ab',
+                'body.range(3)' => '3456789abcdef',
+            ),
+            4 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'product-1',
+                    'body' => '0123456789abcdef',
+                    'body.range(0,12)' => '0123456789ab',
+                    'body.range(3)' => '3456789abcdef',
+                ),
+            ),
+            5 =>
+            array(
+                0 =>
+                array(
+                    'key' => 'product-1',
+                    'body.range(0,12)' => '0123456789ab',
+                    'body.range(3)' => '3456789abcdef',
+                ),
+            ),
+            6 => NULL,
+        ));
+
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
+'));
+    }
+
+    /**
+     * 
+     */
     public function testAppendAfterDelete()
     {
         $objectStorage = $this->getInstance();
