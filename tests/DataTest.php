@@ -1315,6 +1315,78 @@ objects/data1: body1'));
     /**
      * 
      */
+    public function testGetBodyLength()
+    {
+        $objectStorage = $this->getInstance();
+        $result = $objectStorage->execute(
+            [
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'bodyLength']
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 1'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'bodyLength']
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-1'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'bodyLength']
+                ],
+                [
+                    'command' => 'set',
+                    'key' => 'product-1',
+                    'body' => 'product body 12'
+                ],
+                [
+                    'command' => 'get',
+                    'key' => 'product-1',
+                    'result' => ['key', 'body', 'bodyLength']
+                ],
+                [
+                    'command' => 'delete',
+                    'key' => 'product-1'
+                ]
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 => null,
+            1 => null,
+            2 =>
+            array(
+                'key' => 'product-1',
+                'bodyLength' => 14
+            ),
+            3 => null,
+            4 => null,
+            5 => null,
+            6 =>
+            array(
+                'key' => 'product-1',
+                'body' => 'product body 12',
+                'bodyLength' => 15
+            ),
+            7 => null
+        ));
+
+        $this->assertTrue($this->checkState('d41d8cd98f00b204e9800998ecf8427e
+'));
+    }
+
+    /**
+     * 
+     */
     public function testAppendAfterDelete()
     {
         $objectStorage = $this->getInstance();
