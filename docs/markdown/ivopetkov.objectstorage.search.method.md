@@ -16,21 +16,21 @@ public array search ( array $parameters )
 'where' => [
 ['key', ['book-1449392776', 'book-1430268158']]
 ],
-'result' => ['key', 'body', 'metadata.title']
+'result' => ['key', 'body', 'body.length', 'body.range(*,*)', 'metadata.title']
 ]
 // Finds objects by metadata
 [
 'where' => [
 ['metadata.year', '2013']
 ],
-'result' => ['key', 'body', 'metadata.title']
+'result' => ['key', 'body', 'body.length', 'body.range(*,*)', 'metadata.title']
 ]
 // Finds objects by regular expression
 [
 'where' => [
 ['key', '^prefix1\/', 'regExp']
 ],
-'result' => ['key', 'body', 'metadata.title']
+'result' => ['key', 'body', 'body.length', 'body.range(*,*)', 'metadata.title']
 ]
 
 ## Returns

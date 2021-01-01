@@ -34,7 +34,7 @@ Enables storing and manipulating data objects in the directory specified.
 
 ##### public array|null [get](ivopetkov.objectstorage.get.method.md) ( array $parameters )
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves object data for a specified key.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Retrieves object data for the specified key.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns: An array containing the result data if existent, NULL otherwise.
 

@@ -1,6 +1,6 @@
 # IvoPetkov\ObjectStorage::get
 
-Retrieves object data for a specified key.
+Retrieves object data for the specified key.
 
 ```php
 public array|null get ( array $parameters )
@@ -10,7 +10,7 @@ public array|null get ( array $parameters )
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`$parameters`
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data in the following format: ['key' => 'example1', 'result' => ['body', 'metadata.year']]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Data in the following format: ['key' => 'example1', 'result' => ['body', 'body.length', 'body.range(*,*)', 'metadata.year']]
 
 ## Returns
 
