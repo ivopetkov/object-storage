@@ -1409,7 +1409,7 @@ class ObjectStorage
 
         $notStartWithPrefixesIndex = empty($notStartWith) ? null : $buildPrefixesIndex($notStartWith);
 
-        $getFiles = function (string $dir, bool $checkDir = true, bool $recursive = false, $limit = null, string $keyPrefix) use (&$getFiles, $logStorageAccess, $notEqual, $startWith, $notStartWithPrefixesIndex, &$existsInPrefixesIndex) {
+        $getFiles = function (string $dir, bool $checkDir, bool $recursive, $limit, string $keyPrefix) use (&$getFiles, $logStorageAccess, $notEqual, $startWith, $notStartWithPrefixesIndex, &$existsInPrefixesIndex) {
             if ($limit === 0) {
                 return [];
             }
