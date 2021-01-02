@@ -1,7 +1,13 @@
 {
     "name": "ivopetkov/object-storage",
     "description": "A better way to work with files",
-    "keywords": ["file access", "object storage", "locking", "atomic file operations", "metadata"],
+    "keywords": [
+        "file access",
+        "object storage",
+        "locking",
+        "atomic file operations",
+        "metadata"
+    ],
     "homepage": "https://github.com/ivopetkov/object-storage",
     "license": "MIT",
     "authors": [
@@ -12,14 +18,16 @@
         }
     ],
     "require": {
-        "php": ">=7.3.0"
+        "php": ">=7.1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "9.*",
+        "phpunit/phpunit": "7.*|8.*|9.*",
         "ivopetkov/docs-generator": "0.1.*"
     },
     "autoload": {
-        "files": ["autoload.php"]
+        "files": [
+            "autoload.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
