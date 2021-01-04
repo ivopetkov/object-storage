@@ -803,9 +803,14 @@ class ObjectStorage
                     if ($modifyBody) {
                         $prepareFileForWriting($this->objectsDir . $key);
                     }
-                    if ($modifyMetadata && sizeof($metadata) === 1 && isset($metadata['*']) && $metadata['*'] === '') { // Check for setting empty metadata
-                        if (!isset($filePointers[$this->metadataDir . $key]) && !is_file($this->metadataDir . $key)) { // Not opened for writing and does not exists
-                            $modifyMetadata = false;
+                    if ($modifyMetadata && sizeof($metadata) === 1 && isset($metadata['*']) && $metadata['*'] === '') { // Check for setting empty metadata}
+                        if (!isset($filePointers[$this->metadataDir . $key])) { // Not opened for writing and does not exists
+                            if ($logStorageAccess) {
+                                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $key), 'Set command.'];
+                            }
+                            if (!is_file($this->metadataDir . $key)) {
+                                $modifyMetadata = false;
+                            }
                         }
                     }
                     if ($modifyMetadata) {
@@ -850,12 +855,22 @@ class ObjectStorage
                 } elseif ($command === 'delete') {
                     $key = $getProperty('key', true);
                     $deleteObjectFile = true;
-                    if (!isset($filePointers[$this->objectsDir . $key]) && !is_file($this->objectsDir . $key)) { // Not opened for writing and does not exists
-                        $deleteObjectFile = false;
+                    if (!isset($filePointers[$this->objectsDir . $key])) { // Not opened for writing and does not exists
+                        if ($logStorageAccess) {
+                            $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->objectsDir . $key), 'Delete command.'];
+                        }
+                        if (!is_file($this->objectsDir . $key)) {
+                            $deleteObjectFile = false;
+                        }
                     }
                     $deleteMetadataFile = true;
-                    if (!isset($filePointers[$this->metadataDir . $key]) && !is_file($this->metadataDir . $key)) { // Not opened for writing and does not exists
-                        $deleteMetadataFile = false;
+                    if (!isset($filePointers[$this->metadataDir . $key])) { // Not opened for writing and does not exists
+                        if ($logStorageAccess) {
+                            $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $key), 'Delete command.'];
+                        }
+                        if (!is_file($this->metadataDir . $key)) {
+                            $deleteMetadataFile = false;
+                        }
                     }
                     if ($deleteObjectFile) {
                         $prepareFileForWriting($this->objectsDir . $key);
