@@ -353,7 +353,7 @@ class ObjectStorage
                 return;
             }
             if ($logStorageAccess) {
-                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for writing.'];
+                $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $filename), 'Prepare for writing.'];
             }
             if (is_dir($filename)) {
                 throw new \IvoPetkov\ObjectStorage\ErrorException('The file ' . $filename . ' is not writable (dir with the same name exists).');
