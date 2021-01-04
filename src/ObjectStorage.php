@@ -1215,7 +1215,7 @@ class ObjectStorage
             if (is_file($pathinfo['dirname'])) {
                 return false;
             }
-            return $this->createDirIfNotExists($pathinfo['dirname']);
+            return $this->createDirIfNotExists($pathinfo['dirname'], true);
         }
         return false;
     }
@@ -1224,16 +1224,19 @@ class ObjectStorage
      * Creates a directory if not existent.
      * 
      * @param string $dir The directory name.
+     * @param bool $skipIsDirCheck Whether to check if the dir exists.
      * @return boolean TRUE if successful, FALSE otherwise.
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      */
-    private function createDirIfNotExists(string $dir): bool
+    private function createDirIfNotExists(string $dir, bool $skipIsDirCheck = false): bool
     {
         $logStorageAccess = isset($this->internalStorageAccessLog);
-        if ($logStorageAccess) {
-            $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Create dir.'];
+        if (!$skipIsDirCheck) {
+            if ($logStorageAccess) {
+                $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Create dir.'];
+            }
         }
-        if (!is_dir($dir)) {
+        if (!$skipIsDirCheck || !is_dir($dir)) {
             try {
                 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
                     restore_error_handler();
