@@ -803,7 +803,7 @@ class ObjectStorage
                     if ($modifyBody) {
                         $prepareFileForWriting($this->objectsDir . $key);
                     }
-                    if ($modifyMetadata && sizeof($metadata) === 1 && isset($metadata['*']) && $metadata['*'] === '') { // Check for setting empty metadata}
+                    if ($modifyMetadata && sizeof($metadata) === 1 && isset($metadata['*']) && $metadata['*'] === '') { // Check for setting empty metadata
                         if (!isset($filePointers[$this->metadataDir . $key])) { // Not opened for writing and does not exists
                             if ($logStorageAccess) {
                                 $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $key), 'Set command.'];
@@ -912,23 +912,55 @@ class ObjectStorage
                     $targetKey = $getProperty('targetKey', true);
                     $prepareFileForReading($this->objectsDir . $sourceKey, true);
                     $prepareFileForWriting($this->objectsDir . $sourceKey);
-                    $prepareFileForWriting($this->metadataDir . $sourceKey);
                     $prepareFileForWriting($this->objectsDir . $targetKey);
-                    $prepareFileForWriting($this->metadataDir . $targetKey);
-                    $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
+                    $noSourceMetadata = false;
+                    if (!isset($filePointers[$this->metadataDir . $sourceKey])) { // Not opened for writing and does not exists
+                        if ($logStorageAccess) {
+                            $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $sourceKey), 'Rename command.'];
+                        }
+                        if (!is_file($this->metadataDir . $sourceKey)) {
+                            $noSourceMetadata = true; // Optimization: Do not prepare and delete the source metadata file because it does not exist.
+                        }
+                    }
+                    $noSourceAndNoTargetMetadata = false;
+                    if ($noSourceMetadata) {
+                        if (!isset($filePointers[$this->metadataDir . $targetKey])) { // Not opened for writing and does not exists
+                            if ($logStorageAccess) {
+                                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $targetKey), 'Rename command.'];
+                            }
+                            if (!is_file($this->metadataDir . $targetKey)) {
+                                $noSourceAndNoTargetMetadata = true; // Optimization: Do not prepare and delete the source metadata file because it does not exist.
+                            }
+                        }
+                    }
+                    if (!$noSourceMetadata) {
+                        $prepareFileForWriting($this->metadataDir . $sourceKey);
+                    }
+                    if ($noSourceAndNoTargetMetadata) {
+                        // Optimization: Do not prepare the target metadata file.
+                    } else {
+                        $prepareFileForWriting($this->metadataDir . $targetKey);
+                    }
+                    $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile, $noSourceMetadata, $noSourceAndNoTargetMetadata) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
                         if ($sourceBody === null) { // The source file is deleted in previous command
                             throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The source object (' . $sourceKey . ') does not exists!');
                         } else {
-                            $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
+                            $sourceMetadata = $noSourceMetadata ? null : $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
-                                $deleteFile($this->metadataDir . $targetKey);
+                                if ($noSourceAndNoTargetMetadata) {
+                                    // Optimization: Not prepared
+                                } else {
+                                    $deleteFile($this->metadataDir . $targetKey);
+                                }
                             } else {
                                 $setFileContent($this->metadataDir . $targetKey, $sourceMetadata);
                             }
                             $deleteFile($this->objectsDir . $sourceKey);
-                            $deleteFile($this->metadataDir . $sourceKey);
+                            if (!$noSourceMetadata) {
+                                $deleteFile($this->metadataDir . $sourceKey);
+                            }
                         }
                     };
                 } elseif ($command === 'get') {
