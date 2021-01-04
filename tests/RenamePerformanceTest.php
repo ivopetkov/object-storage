@@ -109,13 +109,13 @@ class RenamePerformanceTest extends ObjectStorageTestCase
             12 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Rename command.',
             ),
             13 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Rename command.',
             ),
             14 =>
@@ -255,67 +255,67 @@ class RenamePerformanceTest extends ObjectStorageTestCase
             12 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Rename command.',
             ),
             13 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             14 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book',
+                1 => 'METADATADIR/book',
                 2 => 'Create file dir.',
             ),
             15 =>
             array(
                 0 => 'clearstatcache',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             16 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             17 =>
             array(
                 0 => 'fopen',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             18 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             19 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book',
+                1 => 'METADATADIR/book',
                 2 => 'Create file dir.',
             ),
             20 =>
             array(
                 0 => 'clearstatcache',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             21 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             22 =>
             array(
                 0 => 'fopen',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             23 =>
@@ -333,13 +333,13 @@ class RenamePerformanceTest extends ObjectStorageTestCase
             25 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Remove deleted files.',
             ),
             26 =>
             array(
                 0 => 'unlink',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Remove deleted files.',
             ),
         ));
@@ -476,67 +476,67 @@ class RenamePerformanceTest extends ObjectStorageTestCase
             12 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Rename command.',
             ),
             13 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             14 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book',
+                1 => 'METADATADIR/book',
                 2 => 'Create file dir.',
             ),
             15 =>
             array(
                 0 => 'clearstatcache',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             16 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             17 =>
             array(
                 0 => 'fopen',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Prepare for writing.',
             ),
             18 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             19 =>
             array(
                 0 => 'is_dir',
-                1 => 'metadataDIR/book',
+                1 => 'METADATADIR/book',
                 2 => 'Create file dir.',
             ),
             20 =>
             array(
                 0 => 'clearstatcache',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             21 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             22 =>
             array(
                 0 => 'fopen',
-                1 => 'metadataDIR/book/book2',
+                1 => 'METADATADIR/book/book2',
                 2 => 'Prepare for writing.',
             ),
             23 =>
@@ -554,13 +554,13 @@ class RenamePerformanceTest extends ObjectStorageTestCase
             25 =>
             array(
                 0 => 'is_file',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Remove deleted files.',
             ),
             26 =>
             array(
                 0 => 'unlink',
-                1 => 'metadataDIR/book/book1',
+                1 => 'METADATADIR/book/book1',
                 2 => 'Remove deleted files.',
             ),
         ));
