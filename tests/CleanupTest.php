@@ -38,18 +38,30 @@ class CleanupTest extends ObjectStorageTestCase
         $objectStorage->delete([
             'key' => 'books/category1/book1'
         ]);
+        $objectStorage->set(
+            [
+                'key' => '.temp/user1',
+                'body' => 'user 1',
+                'metadata.title' => 'User 1'
+            ]
+        );
+        $objectStorage->delete([
+            'key' => '.temp/user1'
+        ]);
 
         $this->assertEquals(scandir($dataDir . 'objects'), array(
             0 => '.',
             1 => '..',
-            2 => 'books',
-            3 => 'services',
+            2 => '.temp',
+            3 => 'books',
+            4 => 'services',
         ));
         $this->assertEquals(scandir($dataDir . 'metadata/'), array(
             0 => '.',
             1 => '..',
-            2 => 'books',
-            3 => 'services',
+            2 => '.temp',
+            3 => 'books',
+            4 => 'services',
         ));
 
         IvoPetkov\ObjectStorage\Utilities::cleanup($dataDir . 'objects');

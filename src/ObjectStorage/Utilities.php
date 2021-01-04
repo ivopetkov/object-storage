@@ -27,11 +27,21 @@ class Utilities
             return;
         }
 
+        $hasGlobBrace = defined('GLOB_BRACE');
+
         $dir = rtrim($dir, '\\/');
-        $removeEmptyDirs = function ($dir) use (&$removeEmptyDirs) {
-            $subDirs = glob($dir . '/*', GLOB_ONLYDIR);
+        $removeEmptyDirs = function ($dir) use (&$removeEmptyDirs, $hasGlobBrace) {
+            if ($hasGlobBrace) {
+                $subDirs = glob($dir . '/{,.}*', GLOB_ONLYDIR | GLOB_NOSORT | GLOB_BRACE);
+            } else {
+                $subDirs = array_unique(array_merge(glob($dir . '/*', GLOB_ONLYDIR | GLOB_NOSORT), glob($dir . '/.*', GLOB_ONLYDIR | GLOB_NOSORT)));
+            }
+
             $allSubDirsAreRemoved = true;
             foreach ($subDirs as $subDir) {
+                if (substr($subDir, -3) === DIRECTORY_SEPARATOR . '..' || substr($subDir, -2) === DIRECTORY_SEPARATOR . '.') {
+                    continue;
+                }
                 if (!$removeEmptyDirs($subDir)) {
                     $allSubDirsAreRemoved = false;
                 }
