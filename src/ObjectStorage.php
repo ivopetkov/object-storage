@@ -890,18 +890,44 @@ class ObjectStorage
                     $sourceKey = $getProperty('sourceKey', true);
                     $targetKey = $getProperty('targetKey', true);
                     $prepareFileForReading($this->objectsDir . $sourceKey, true);
-                    $prepareFileForReading($this->metadataDir . $sourceKey);
                     $prepareFileForWriting($this->objectsDir . $targetKey);
-                    $prepareFileForWriting($this->metadataDir . $targetKey);
-                    $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile) {
+                    $noSourceMetadata = false;
+                    if (!isset($filePointers[$this->metadataDir . $sourceKey])) { // Not opened for writing and does not exists
+                        if ($logStorageAccess) {
+                            $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $sourceKey), 'Duplicate command.'];
+                        }
+                        if (!is_file($this->metadataDir . $sourceKey)) {
+                            $noSourceMetadata = true; // Optimization: Do not prepare and delete the source metadata file because it does not exist.
+                        }
+                    }
+                    $noSourceAndNoTargetMetadata = false;
+                    if ($noSourceMetadata) {
+                        if (!isset($filePointers[$this->metadataDir . $targetKey])) { // Not opened for writing and does not exists
+                            if ($logStorageAccess) {
+                                $this->internalStorageAccessLog[] = ['is_file', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $this->metadataDir . $targetKey), 'Duplicate command.'];
+                            }
+                            if (!is_file($this->metadataDir . $targetKey)) {
+                                $noSourceAndNoTargetMetadata = true; // Optimization: Do not prepare and delete the source metadata file because it does not exist.
+                            }
+                        }
+                    }
+                    if (!$noSourceMetadata) {
+                        $prepareFileForReading($this->metadataDir . $sourceKey);
+                    }
+                    if (!$noSourceAndNoTargetMetadata) {
+                        $prepareFileForWriting($this->metadataDir . $targetKey);
+                    }
+                    $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile, $noSourceMetadata, $noSourceAndNoTargetMetadata) {
                         $sourceBody = $getFileContent($this->objectsDir . $sourceKey);
                         if ($sourceBody === null) { // The source file is deleted in previous command
                             throw new \IvoPetkov\ObjectStorage\ObjectNotFoundException('The source object (' . $sourceKey . ') does not exists!');
                         } else {
-                            $sourceMetadata = $getFileContent($this->metadataDir . $sourceKey);
+                            $sourceMetadata = $noSourceMetadata ? null : $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
-                                $deleteFile($this->metadataDir . $targetKey);
+                                if (!$noSourceAndNoTargetMetadata) {
+                                    $deleteFile($this->metadataDir . $targetKey);
+                                }
                             } else {
                                 $setFileContent($this->metadataDir . $targetKey, $sourceMetadata);
                             }
@@ -936,9 +962,7 @@ class ObjectStorage
                     if (!$noSourceMetadata) {
                         $prepareFileForWriting($this->metadataDir . $sourceKey);
                     }
-                    if ($noSourceAndNoTargetMetadata) {
-                        // Optimization: Do not prepare the target metadata file.
-                    } else {
+                    if (!$noSourceAndNoTargetMetadata) {
                         $prepareFileForWriting($this->metadataDir . $targetKey);
                     }
                     $functions[$index] = function () use ($sourceKey, $targetKey, $getFileContent, $setFileContent, $deleteFile, $noSourceMetadata, $noSourceAndNoTargetMetadata) {
@@ -949,9 +973,7 @@ class ObjectStorage
                             $sourceMetadata = $noSourceMetadata ? null : $getFileContent($this->metadataDir . $sourceKey);
                             $setFileContent($this->objectsDir . $targetKey, $sourceBody);
                             if ($sourceMetadata === null) {
-                                if ($noSourceAndNoTargetMetadata) {
-                                    // Optimization: Not prepared
-                                } else {
+                                if (!$noSourceAndNoTargetMetadata) {
                                     $deleteFile($this->metadataDir . $targetKey);
                                 }
                             } else {
