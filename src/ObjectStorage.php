@@ -44,6 +44,13 @@ class ObjectStorage
     private $lockRetryDelay = 500000;
 
     /**
+     * An array where an access log data will be stored. If null, the logging will not be activated.
+     * 
+     * @var null|array
+     */
+    public $internalStorageAccessLog = null;
+
+    /**
      * Creates a new ObjectStorage instance.
      * 
      * @param string $objectsDir The directory where the library will store the objects.
@@ -265,7 +272,7 @@ class ObjectStorage
         $filesToDelete = [];
         $emptyOpenedFiles = []; // opened but no content set
 
-        $logStorageAccess = isset($this->internalStorageAccessLog);
+        $logStorageAccess = $this->internalStorageAccessLog !== null;
 
         $encodeMetaData = function ($metadata) {
             return "content-type:json\n\n" . json_encode($metadata);
@@ -1271,7 +1278,7 @@ class ObjectStorage
     {
         $pathinfo = pathinfo($filename);
         if (isset($pathinfo['dirname']) && $pathinfo['dirname'] !== '.') {
-            $logStorageAccess = isset($this->internalStorageAccessLog);
+            $logStorageAccess = $this->internalStorageAccessLog !== null;
             if ($logStorageAccess) {
                 $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $pathinfo['dirname']), 'Create file dir.'];
             }
@@ -1299,7 +1306,7 @@ class ObjectStorage
      */
     private function createDirIfNotExists(string $dir, bool $skipIsDirCheck = false): bool
     {
-        $logStorageAccess = isset($this->internalStorageAccessLog);
+        $logStorageAccess = $this->internalStorageAccessLog !== null;
         if (!$skipIsDirCheck) {
             if ($logStorageAccess) {
                 $this->internalStorageAccessLog[] = ['is_dir', str_replace([$this->objectsDir, $this->metadataDir], ['OBJECTSDIR/', 'METADATADIR/'], $dir), 'Create dir.'];
@@ -1337,7 +1344,7 @@ class ObjectStorage
      */
     private function getFiles(string $dir, bool $recursive = false, $limit = null, array $options = []): array
     {
-        $logStorageAccess = isset($this->internalStorageAccessLog);
+        $logStorageAccess = $this->internalStorageAccessLog !== null;
         $keyPrefix = '';
         $equal = $options['equal'];
         if (!empty($equal)) {
