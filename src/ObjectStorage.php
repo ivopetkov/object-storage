@@ -265,6 +265,7 @@ class ObjectStorage
      * @throws \InvalidArgumentException
      * @throws \IvoPetkov\ObjectStorage\ErrorException
      * @throws \IvoPetkov\ObjectStorage\ObjectLockedException
+     * @throws \IvoPetkov\ObjectStorage\ObjectNotFoundException
      */
     public function execute(array $commands): array
     {

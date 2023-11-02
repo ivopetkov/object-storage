@@ -39,7 +39,7 @@ class Utilities
 
             $allSubDirsAreRemoved = true;
             foreach ($subDirs as $subDir) {
-                if (substr($subDir, -3) === DIRECTORY_SEPARATOR . '..' || substr($subDir, -2) === DIRECTORY_SEPARATOR . '.') {
+                if (array_search(substr($subDir, -2), ['/.', '\.']) !== false || array_search(substr($subDir, -3), ['/..', '\..']) !== false) {
                     continue;
                 }
                 if (!$removeEmptyDirs($subDir)) {
