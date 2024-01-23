@@ -2,11 +2,8 @@
 
 **File-based object storage** with simple API, metadata support, atomic operations and transactions.
 
-[![Build Status](https://travis-ci.org/ivopetkov/object-storage.svg)](https://travis-ci.org/ivopetkov/object-storage)
 [![Latest Stable Version](https://poser.pugx.org/ivopetkov/object-storage/v/stable)](https://packagist.org/packages/ivopetkov/object-storage)
-[![codecov.io](https://codecov.io/github/ivopetkov/object-storage/coverage.svg?branch=master)](https://codecov.io/github/ivopetkov/object-storage?branch=master)
 [![License](https://poser.pugx.org/ivopetkov/object-storage/license)](https://packagist.org/packages/ivopetkov/object-storage)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c9ad5d49897f4c209236225b7d0c1c1c)](https://www.codacy.com/app/ivo_2/object-storage)
 
 ## Install via Composer
 
