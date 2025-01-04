@@ -133,7 +133,7 @@ class ObjectStorageTestCase extends PHPUnit\Framework\TestCase
             mkdir($dir, 0777, true);
         }
         $filename = realpath($dir) . '/' . $key;
-        $index = sizeof($this->lockedFiles);
+        $index = count($this->lockedFiles);
         $this->lockedFiles[$index] = fopen($filename, "c+");
         flock($this->lockedFiles[$index], LOCK_EX | LOCK_NB);
     }
