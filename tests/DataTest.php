@@ -1106,7 +1106,7 @@ objects/data1: body1'));
             )
         ));
 
-        // Test startWith
+        // Test startWith 1
         $result = $objectStorage->search(
             [
                 'where' => [
@@ -1130,6 +1130,33 @@ objects/data1: body1'));
             )
         ));
 
+        // Test startWith 2
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', 'data1', 'startWith']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            )
+        ));
+
+        // Test startWith 3
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', 'datax', 'startWith']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array());
+
         // Test notStartWith
         $result = $objectStorage->search(
             [
@@ -1150,6 +1177,61 @@ objects/data1: body1'));
             )
         ));
 
+        // Test startWithAny 1
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', ['data'], 'startWithAny'],
+                    ['key', ['d'], 'startWithAny']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            ),
+            1 =>
+            array(
+                'key' => 'data2'
+            ),
+            2 =>
+            array(
+                'key' => 'data3'
+            )
+        ));
+
+        // Test startWithAny 2
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', ['data1', 'data2'], 'startWithAny']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            ),
+            1 =>
+            array(
+                'key' => 'data2'
+            )
+        ));
+
+        // Test startWithAny 3
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', ['datax'], 'startWithAny']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array());
 
         // Test endWith
         $result = $objectStorage->search(
@@ -1186,6 +1268,37 @@ objects/data1: body1'));
                 'key' => 'data3'
             )
         ));
+
+        // Test endWithAny 1
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', ['1', '2'], 'endWithAny']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'data1'
+            ),
+            1 =>
+            array(
+                'key' => 'data2'
+            )
+        ));
+
+        // Test endWithAny 2
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', ['x'], 'endWithAny']
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array());
 
         // Test regExp
         $result = $objectStorage->search(

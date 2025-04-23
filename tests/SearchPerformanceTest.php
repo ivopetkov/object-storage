@@ -321,11 +321,7 @@ class SearchPerformanceTest extends ObjectStorageTestCase
             1 =>
             array(
                 'key' => 'book/book2',
-            ),
-            2 =>
-            array(
-                'key' => 'book/object3',
-            ),
+            )
         ));
         $this->assertTrue($objectStorage->internalStorageAccessLog === array(
             0 =>
@@ -351,13 +347,7 @@ class SearchPerformanceTest extends ObjectStorageTestCase
                 0 => 'is_dir',
                 1 => 'OBJECTSDIR/book/book2',
                 2 => 'Get files list.',
-            ),
-            4 =>
-            array(
-                0 => 'is_dir',
-                1 => 'OBJECTSDIR/book/object3',
-                2 => 'Get files list.',
-            ),
+            )
         ));
     }
 
@@ -1004,6 +994,76 @@ class SearchPerformanceTest extends ObjectStorageTestCase
             0 =>
             array(
                 0 => 'is_file',
+                1 => 'OBJECTSDIR/company/products/computers/1',
+                2 => 'Get files list.',
+            ),
+        ));
+    }
+
+    /**
+     * 
+     * @return void
+     */
+    public function testSearchPerformance18()
+    {
+        $objectStorage = $this->getInstance();
+        $objectStorage->set(
+            [
+                'key' => 'company/products/computers/1',
+                'body' => 'computer1'
+            ]
+        );
+        $objectStorage->set(
+            [
+                'key' => 'company/products/books/2',
+                'body' => 'book2'
+            ]
+        );
+        $objectStorage->internalStorageAccessLog = [];
+        $result = $objectStorage->search(
+            [
+                'where' => [
+                    ['key', ['company/products/', 'company/'], 'startWithAny'],
+                    ['key', 'company/products/books', 'notStartWith'],
+                    ['key', 'company/xxx', 'notStartWith'],
+                ],
+                'result' => ['key']
+            ]
+        );
+        $this->assertTrue($result === array(
+            0 =>
+            array(
+                'key' => 'company/products/computers/1',
+            ),
+        ));
+        $this->assertTrue($objectStorage->internalStorageAccessLog === array(
+            0 =>
+            array(
+                0 => 'is_dir',
+                1 => 'OBJECTSDIR/company/products/',
+                2 => 'Get files list.',
+            ),
+            1 =>
+            array(
+                0 => 'scandir',
+                1 => 'OBJECTSDIR/company/products/',
+                2 => 'Get files list.',
+            ),
+            2 =>
+            array(
+                0 => 'is_dir',
+                1 => 'OBJECTSDIR/company/products/computers',
+                2 => 'Get files list.',
+            ),
+            3 =>
+            array(
+                0 => 'scandir',
+                1 => 'OBJECTSDIR/company/products/computers/',
+                2 => 'Get files list.',
+            ),
+            4 =>
+            array(
+                0 => 'is_dir',
                 1 => 'OBJECTSDIR/company/products/computers/1',
                 2 => 'Get files list.',
             ),
