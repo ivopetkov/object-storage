@@ -1244,11 +1244,15 @@ class ObjectStorage
         }
 
         if ($thrownException === null) {
-            $result = [];
-            foreach ($commands as $index => $commandData) {
-                $result[$index] = $functions[$index]();
+            try {
+                $result = [];
+                foreach ($commands as $index => $commandData) {
+                    $result[$index] = $functions[$index]();
+                }
+                unset($functions);
+            } catch (\Exception $e) {
+                $thrownException = $e;
             }
-            unset($functions);
         }
 
         foreach ($filePointers as $filename => $filePointer) {
